@@ -9,7 +9,7 @@
     <PropertyGroup>
         <Authors>Mauro Servienti</Authors>
         <Description>NServiceBoXes Endpoints</Description>
-        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageIcon>icon.png</PackageIcon>
         <PackageTags>NServiceBus NServiceBoXes Endpoints</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
