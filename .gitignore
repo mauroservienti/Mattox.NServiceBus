@@ -30,3 +30,6 @@ x86/
 
 # JetBrains Rider
 .idea/
+
+# macOS garbase
+.DS_Store
