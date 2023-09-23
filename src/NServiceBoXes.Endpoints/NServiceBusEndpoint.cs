@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Configuration;
-using NServiceBus;
 using NServiceBus.Persistence;
 using NServiceBus.Serialization;
 using NServiceBus.Transport;
@@ -12,7 +11,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     protected EndpointConfiguration EndpointConfiguration{ get; }
     protected IConfigurationSection? EndpointConfigurationSection { get; }
     
-    Action<SerializationExtensions<NewtonsoftJsonSerializer>>? _serializerCustomization;
+    Action<SerializationExtensions<SystemJsonSerializer>>? _serializerCustomization;
     bool _useDefaultSerializer = true;
 
     protected TTransport Transport { get; private set; } = null!;
@@ -100,7 +99,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         
         if (_useDefaultSerializer)
         {
-            var serializerConfiguration = EndpointConfiguration.UseSerialization<NewtonsoftJsonSerializer>();
+            var serializerConfiguration = EndpointConfiguration.UseSerialization<SystemJsonSerializer>();
             _serializerCustomization?.Invoke(serializerConfiguration);
         }
         
@@ -135,7 +134,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         return EndpointConfiguration.UseSerialization<T>();
     }
     
-    public void CustomizeDefaultSerializer(Action<SerializationExtensions<NewtonsoftJsonSerializer>> serializerCustomization)
+    public void CustomizeDefaultSerializer(Action<SerializationExtensions<SystemJsonSerializer>> serializerCustomization)
     {
         _serializerCustomization = serializerCustomization;
     }
