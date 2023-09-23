@@ -33,13 +33,13 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     void ConfigureAuditing()
     {
         var auditSection = EndpointConfigurationSection?.GetSection("Auditing");
-        var disableAuditing = bool.Parse(auditSection!["Disabled"] ?? false.ToString());
+        var disableAuditing = bool.Parse(auditSection?["Disabled"] ?? false.ToString());
         if (disableAuditing)
         {
             return;
         }
 
-        var auditQueue = auditSection["Queue"] ?? "audit";
+        var auditQueue = auditSection?["Queue"] ?? "audit";
         EndpointConfiguration.AuditProcessedMessagesTo(auditQueue);
     }
 
@@ -101,7 +101,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         if (_useDefaultSerializer)
         {
             var serializerConfiguration = EndpointConfiguration.UseSerialization<NewtonsoftJsonSerializer>();
-            _serializerCustomization!.Invoke(serializerConfiguration);
+            _serializerCustomization?.Invoke(serializerConfiguration);
         }
         
         Transport = _transportFactory != null ? _transportFactory(_configuration) : CreateTransport(EndpointConfigurationSection);
