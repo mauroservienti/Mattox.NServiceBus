@@ -4,4 +4,4 @@
 
 ---
 
-Icon — Box by Angriawan Ditya Zulkarnain from <a href="https://thenounproject.com/browse/icons/term/box/" target="_blank" title="Box Icons">Noun Project</a> (CC BY 3.0)
+Icon — [Box by Angriawan Ditya Zulkarnain](https://thenounproject.com/icon/box-1298424/) from [Noun Project](https://thenounproject.com/browse/icons/term/box/) (CC BY 3.0)
