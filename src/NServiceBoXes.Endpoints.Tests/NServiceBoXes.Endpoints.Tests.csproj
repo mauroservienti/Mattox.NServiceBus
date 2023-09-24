@@ -30,4 +30,10 @@
       <ProjectReference Include="..\NServiceBoXes.Endpoints\NServiceBoXes.Endpoints.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="endpoint.settings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

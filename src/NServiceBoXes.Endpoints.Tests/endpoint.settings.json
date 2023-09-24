@@ -1,0 +1,10 @@
+{
+ "NServiceBus": {
+   "EndpointConfiguration": {
+     "EndpointName": "my-endpoint",
+     "Auditing": {
+       "AuditQueue": "my-audit-queue"
+     }
+   }
+ }
+}
