@@ -13,7 +13,7 @@ var endpointInstance = await endpoint.Start();
 
 NServiceBoXes endpoints can be configured through the [`Microsoft.Extensions.Configuration`](https://www.nuget.org/packages/Microsoft.Extensions.Configuration). The above-presented RabbitMQ endpoint can be configured as follows:
 
-```
+```csharp
 Host.CreateDefaultBuilder()
     .UseNServiceBus(hostBuilderContext => new RabbitMqEndpoint(hostBuilderContext.Configuration))
     .Build();
