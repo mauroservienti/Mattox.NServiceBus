@@ -1,6 +1,8 @@
 # Configuration
 
-NServiceBoXes endpoints can be configured through the [`Microsoft.Extensions.Configuration`](https://www.nuget.org/packages/Microsoft.Extensions.Configuration). All settings are defined in the `NServiceBus:EndpointConfiguration` section.
+NServiceBoXes endpoints can be configured through the [`Microsoft.Extensions.Configuration`](https://www.nuget.org/packages/Microsoft.Extensions.Configuration). All settings are defined in the `NServiceBus:EndpointConfiguration` section. Different endpoints supporting different transport may define additional settings. Refer to the endpoint-specific documentation for more details.
+
+## Endpoint name
 
 - `NServiceBus:EndpointConfiguration:EndpointName` configures the endpoint name. This setting is mandatory unless specified through the endpoint class constructor.
 
