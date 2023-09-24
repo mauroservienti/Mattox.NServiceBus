@@ -26,6 +26,11 @@ The endpoint will retrieve values from the `IConfiguration` object instance. For
 - [NServiceBoXes.Endpoints.AmazonSQS](https://github.com/mauroservienti/NServiceBoXes.Endpoints.AmazonSQS)
 - [NServiceBoXes.Endpoints.RabbitMQ](https://github.com/mauroservienti/NServiceBoXes.Endpoints.RabbitMQ)
 
+## How to get it
+
+- Pre-releases are available on [Feedz.io](https://feedz.io/) ([public feed](https://f.feedz.io/mauroservienti/pre-releases/nuget/index.json))
+- Releases on [NuGet.org](https://www.nuget.org/packages?q=NServiceBoXes)
+
 ## NOTE
 
 > This package is not meant to be used directly. It serves as a base package for other NServiceBoXes Endpoints, such as [NServiceBoXes.Endpoints.AmazonSQS](https://github.com/mauroservienti/NServiceBoXes.Endpoints.AmazonSQS), [NServiceBoXes.Endpoints.RabbitMQ](https://github.com/mauroservienti/NServiceBoXes.Endpoints.RabbitMQ), and many more.
