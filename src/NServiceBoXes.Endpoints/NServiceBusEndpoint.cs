@@ -38,7 +38,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             return;
         }
 
-        var auditQueue = auditSection?["Queue"] ?? "audit";
+        var auditQueue = auditSection?["AuditQueue"] ?? "audit";
         EndpointConfiguration.AuditProcessedMessagesTo(auditQueue);
     }
 
@@ -46,7 +46,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     {
         var recoverabilitySection = EndpointConfigurationSection?.GetSection("Recoverability");
         
-        var errorQueue = recoverabilitySection?["Queue"] ?? "error";
+        var errorQueue = recoverabilitySection?["ErrorQueue"] ?? "error";
         EndpointConfiguration.SendFailedMessagesTo(errorQueue);
         
         var recoverabilityConfiguration = EndpointConfiguration.Recoverability();
