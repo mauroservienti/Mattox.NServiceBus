@@ -19,7 +19,7 @@ Host.CreateDefaultBuilder()
     .Build();
 ```
 
-The endpoint will retrieve values from the `IConfiguration` object instance. For more information, refer to the [NServiceBoXes.Endpoints.RabbitMQ](https://github.com/mauroservienti/NServiceBoXes.Endpoints.RabbitMQ) documentation.
+The endpoint will retrieve values from the `IConfiguration` object instance. For more information, refer to the [NServiceBoXes.Endpoints configuration options docmentation](/docs).
 
 ## Supported endpoints
 
