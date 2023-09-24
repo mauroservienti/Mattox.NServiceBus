@@ -62,7 +62,7 @@ public class LearningEndpointTests
     [Fact]
     public void When_auditing_is_disabled_no_audit_queue_is_configured()
     {
-        Environment.SetEnvironmentVariable("NServiceBus:EndpointConfiguration:Auditing:Disabled", "True");
+        Environment.SetEnvironmentVariable("NServiceBus:EndpointConfiguration:Auditing:Enabled", "False");
         
         var config = new ConfigurationBuilder()
             .AddEnvironmentVariables()

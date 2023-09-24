@@ -32,8 +32,8 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     void ConfigureAuditing()
     {
         var auditSection = EndpointConfigurationSection?.GetSection("Auditing");
-        var disableAuditing = bool.Parse(auditSection?["Disabled"] ?? false.ToString());
-        if (disableAuditing)
+        var enableAuditing = bool.Parse(auditSection?["Enabled"] ?? true.ToString());
+        if (!enableAuditing)
         {
             return;
         }
