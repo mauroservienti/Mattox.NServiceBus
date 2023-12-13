@@ -5,11 +5,13 @@ using NServiceBus.Transport;
 
 namespace NServiceBoXes.Endpoints;
 
-public abstract class NServiceBusEndpoint<TTransport> where TTransport : TransportDefinition
+public abstract class NServiceBusEndpoint<TEndpointConfigurationManager, TTransport> 
+    where TTransport : TransportDefinition 
+    where TEndpointConfigurationManager : EndpointConfigurationManager<TTransport>, new()
 {
     readonly IConfiguration? _configuration;
     protected EndpointConfiguration EndpointConfiguration{ get; }
-    protected IConfigurationSection? EndpointConfigurationSection { get; }
+    
     
     Action<SerializationExtensions<SystemJsonSerializer>>? _serializerCustomization;
     bool _useDefaultSerializer = true;
@@ -18,79 +20,22 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     Action<TTransport>? _transportCustomization;
     Func<IConfiguration?, TTransport>? _transportFactory;
 
-    protected NServiceBusEndpoint(string endpointName, IConfiguration? configuration = null)
+    protected NServiceBusEndpoint(IConfiguration? configuration = null)
+    {
+    }
+
+    protected NServiceBusEndpoint(string endpointName, IConfigurationSection? endpointConfigurationSection = null)
     {
         if (endpointName == null) throw new ArgumentNullException(nameof(endpointName));
-        
-        _configuration = configuration;
+
+        var manager = new TEndpointConfigurationManager();
         EndpointConfiguration = new EndpointConfiguration(endpointName);
-        EndpointConfigurationSection = configuration?.GetSection("NServiceBus:EndpointConfiguration");
+        manager.Customize(EndpointConfiguration, endpointConfigurationSection);
     }
     
-    protected abstract TTransport CreateTransport(IConfigurationSection? endpointConfigurationSection);
+   
 
-    void ConfigureAuditing()
-    {
-        var auditSection = EndpointConfigurationSection?.GetSection("Auditing");
-        var enableAuditing = bool.Parse(auditSection?["Enabled"] ?? true.ToString());
-        if (!enableAuditing)
-        {
-            return;
-        }
-
-        var auditQueue = auditSection?["AuditQueue"] ?? "audit";
-        EndpointConfiguration.AuditProcessedMessagesTo(auditQueue);
-    }
-
-    void ConfigureRecoverability()
-    {
-        var recoverabilitySection = EndpointConfigurationSection?.GetSection("Recoverability");
-        
-        var errorQueue = recoverabilitySection?["ErrorQueue"] ?? "error";
-        EndpointConfiguration.SendFailedMessagesTo(errorQueue);
-        
-        var recoverabilityConfiguration = EndpointConfiguration.Recoverability();
-
-        if (recoverabilitySection?.GetSection("Immediate") is { } immediateSection)
-        {
-            recoverabilityConfiguration.Immediate(
-                immediate =>
-                {
-                    if(immediateSection["NumberOfRetries"] is {} numberOfRetries)
-                    {
-                        immediate.NumberOfRetries(int.Parse(numberOfRetries));
-                    }
-                }); 
-        }
-        
-        if(recoverabilitySection?.GetSection("Delayed") is { } delayedSection)
-        {
-            recoverabilityConfiguration.Delayed(
-                delayed =>
-                {
-                    if(delayedSection["NumberOfRetries"] is { } numberOfRetries)
-                    {
-                        delayed.NumberOfRetries(int.Parse(numberOfRetries));
-                    }
-                    
-                    if (delayedSection["TimeIncrease"] is {} timeIncrease)
-                    {;
-                        delayed.TimeIncrease(TimeSpan.Parse(timeIncrease));
-                    }
-                });
-        }
-    }
     
-    
-    protected static string GetEndpointNameFromConfigurationOrThrow(IConfiguration? configuration)
-    {
-        if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-        
-        return configuration.GetSection("NServiceBus:EndpointConfiguration")["EndpointName"]
-               ?? throw new ArgumentException(
-                   "EndpointName cannot be null. Make sure the " +
-                   "NServiceBus:EndpointConfiguration:EndpointName configuration section is set.");
-    }
     
     protected virtual void FinalizeConfiguration()
     {
@@ -109,7 +54,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         EndpointConfiguration.UseTransport(Transport);
     }
     
-    public static implicit operator EndpointConfiguration(NServiceBusEndpoint<TTransport> endpoint)
+    public static implicit operator EndpointConfiguration(NServiceBusEndpoint<TEndpointConfigurationManager, TTransport> endpoint)
     {
         endpoint.FinalizeConfiguration();
         return endpoint.EndpointConfiguration;
@@ -155,5 +100,106 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         var endpointInstance = await Endpoint.Start(EndpointConfiguration).ConfigureAwait(false);
         return endpointInstance;
+    }
+}
+
+public abstract class EndpointConfigurationManager<TTransport>
+{
+    const string NServiceBusEndpointConfigurationSectionName = "NServiceBus:EndpointConfiguration";
+    
+    static void ConfigureAuditing(EndpointConfiguration endpointConfiguration, IConfigurationSection? endpointConfigurationSection)
+    {
+        var auditSection = endpointConfigurationSection?.GetSection("Auditing");
+        var enableAuditing = bool.Parse(auditSection?["Enabled"] ?? true.ToString());
+        if (!enableAuditing)
+        {
+            return;
+        }
+
+        var auditQueue = auditSection?["AuditQueue"] ?? "audit";
+        endpointConfiguration.AuditProcessedMessagesTo(auditQueue);
+    }
+
+    static void ConfigureRecoverability(EndpointConfiguration endpointConfiguration, IConfigurationSection? endpointConfigurationSection)
+    {
+        var recoverabilitySection = endpointConfigurationSection?.GetSection("Recoverability");
+        
+        var errorQueue = recoverabilitySection?["ErrorQueue"] ?? "error";
+        endpointConfiguration.SendFailedMessagesTo(errorQueue);
+        
+        var recoverabilityConfiguration = endpointConfiguration.Recoverability();
+
+        if (recoverabilitySection?.GetSection("Immediate") is { } immediateSection)
+        {
+            recoverabilityConfiguration.Immediate(
+                immediate =>
+                {
+                    if(immediateSection["NumberOfRetries"] is {} numberOfRetries)
+                    {
+                        immediate.NumberOfRetries(int.Parse(numberOfRetries));
+                    }
+                }); 
+        }
+        
+        if(recoverabilitySection?.GetSection("Delayed") is { } delayedSection)
+        {
+            recoverabilityConfiguration.Delayed(
+                delayed =>
+                {
+                    if(delayedSection["NumberOfRetries"] is { } numberOfRetries)
+                    {
+                        delayed.NumberOfRetries(int.Parse(numberOfRetries));
+                    }
+                    
+                    if (delayedSection["TimeIncrease"] is {} timeIncrease)
+                    {;
+                        delayed.TimeIncrease(TimeSpan.Parse(timeIncrease));
+                    }
+                });
+        }
+    }
+    
+    static string GetEndpointNameFromConfigurationOrThrow(IConfigurationSection endpointConfigurationSection)
+    {
+        if (endpointConfigurationSection == null) throw new ArgumentNullException(nameof(endpointConfigurationSection));
+        
+        return endpointConfigurationSection["EndpointName"]
+               ?? throw new ArgumentException(
+                   "EndpointName cannot be null. Make sure the " +
+                   "NServiceBus:EndpointConfiguration:EndpointName configuration section/value is set.");
+    }
+
+    protected abstract TTransport CreateTransport(IConfigurationSection? transportConfigurationSection);
+    
+    protected internal virtual void Customize(EndpointConfiguration endpointConfiguration,
+        IConfigurationSection? endpointConfigurationSection)
+    {
+        ConfigureAuditing(endpointConfiguration, endpointConfigurationSection);
+        ConfigureRecoverability(endpointConfiguration, endpointConfigurationSection);
+        
+        // create the transport
+        var transport = _transportFactory != null ? _transportFactory(_configuration) : CreateTransport(endpointConfigurationSection?.GetSection("Transport"));
+        endpointConfiguration.UseTransport(transport);
+        //create persistence
+
+    }
+    
+    public void CustomizeEndpointConfiguration(EndpointConfiguration endpointConfiguration, IConfiguration configuration)
+    {
+        var endpointConfigurationSection = configuration.GetSection(NServiceBusEndpointConfigurationSectionName);
+        Customize(endpointConfiguration, endpointConfigurationSection);
+    }
+    
+    public EndpointConfiguration CreateEndpointConfigurationFrom(IConfiguration configuration)
+    {
+        if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+
+        var endpointConfigurationSection = configuration.GetSection(NServiceBusEndpointConfigurationSectionName);
+        var endpointName = GetEndpointNameFromConfigurationOrThrow(endpointConfigurationSection);
+        var config = new EndpointConfiguration(endpointName);
+
+        Customize(config, endpointConfigurationSection);
+        
+        return config;
     }
 }
