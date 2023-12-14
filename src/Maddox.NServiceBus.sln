@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NServiceBoXes.Endpoints", "NServiceBoXes.Endpoints\NServiceBoXes.Endpoints.csproj", "{96B64204-3CA7-4DCD-B2B1-472C68C8548E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maddox.NServiceBus", "Maddox.NServiceBus\Maddox.NServiceBus.csproj", "{96B64204-3CA7-4DCD-B2B1-472C68C8548E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NServiceBoXes.Endpoints.Tests", "NServiceBoXes.Endpoints.Tests\NServiceBoXes.Endpoints.Tests.csproj", "{4A3D3957-A397-48E5-88A5-800DC7CE1705}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maddox.NServiceBus.Tests", "Maddox.NServiceBus.Tests\Maddox.NServiceBus.Tests.csproj", "{4A3D3957-A397-48E5-88A5-800DC7CE1705}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

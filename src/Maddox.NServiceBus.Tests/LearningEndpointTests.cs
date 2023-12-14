@@ -1,14 +1,15 @@
 using Microsoft.Extensions.Configuration;
+using NServiceBus;
 using NServiceBus.Configuration.AdvancedExtensibility;
 
-namespace NServiceBoXes.Endpoints.Tests;
+namespace Maddox.NServiceBus.Tests;
 
 public class LearningEndpointTests
 {
     [Fact]
     public void Basic_endpoint_respect_name_and_default_values()
     {
-        var expectedEndpointName = "my-endpoint";
+        const string expectedEndpointName = "my-endpoint";
         var endpoint = new LearningEndpoint(expectedEndpointName);
         EndpointConfiguration endpointConfiguration = endpoint;
         
@@ -20,7 +21,7 @@ public class LearningEndpointTests
     [Fact]
     public void Using_json_configuration_respect_settings()
     {
-        var expectedEndpointName = "my-endpoint";
+        const string expectedEndpointName = "my-endpoint";
      
         var config = new ConfigurationBuilder()
             .AddJsonFile("endpoint.settings.json")
@@ -44,7 +45,7 @@ public class LearningEndpointTests
     [Fact]
     public void Using_env_var_configuration_respect_endpoint_name()
     {
-        var expectedEndpointName = "my-endpoint";
+        const string expectedEndpointName = "my-endpoint";
         Environment.SetEnvironmentVariable("NServiceBus:EndpointConfiguration:EndpointName", expectedEndpointName);
         
         var config = new ConfigurationBuilder()
