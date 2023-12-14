@@ -2,23 +2,13 @@ using Microsoft.Extensions.Configuration;
 
 namespace NServiceBoXes.Endpoints;
 
-public class LearningEndpointConfigurationManager : EndpointConfigurationManager<LearningTransport>
+public class LearningEndpoint : NServiceBusEndpoint<LearningEndpointConfigurationManager, LearningTransport>
 {
-    protected override LearningTransport CreateTransport(IConfigurationSection? transportConfigurationSection)
+    public LearningEndpoint(IConfiguration configuration) : base(configuration)
     {
-        
     }
 
-    protected internal override void Customize(EndpointConfiguration endpointConfiguration, IConfigurationSection? endpointConfigurationSection)
+    public LearningEndpoint(string endpointName, IConfiguration? configuration = null) : base(endpointName, configuration)
     {
-        base.Customize(endpointConfiguration, endpointConfigurationSection);
-    }
-}
-
-public class Snippets
-{
-    public static void Usage(IConfiguration configuration)
-    {
-        var endpointConfig = new LearningEndpointConfigurationManager().CreateEndpointConfigurationFrom(configuration);
     }
 }
