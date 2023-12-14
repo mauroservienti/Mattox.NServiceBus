@@ -10,20 +10,20 @@ public abstract class NServiceBusEndpoint<TEndpointConfigurationManager, TTransp
     where TEndpointConfigurationManager : EndpointConfigurationManager<TTransport>, new()
 {
     readonly EndpointConfiguration _endpointConfiguration;
-    readonly TEndpointConfigurationManager _configurationManager;
+    protected TEndpointConfigurationManager ConfigurationManager { get; }
 
     protected NServiceBusEndpoint(IConfiguration configuration)
     {
-        _configurationManager = new TEndpointConfigurationManager();
-        _endpointConfiguration = _configurationManager.CreateEndpointConfiguration(configuration);
+        ConfigurationManager = new TEndpointConfigurationManager();
+        _endpointConfiguration = ConfigurationManager.CreateEndpointConfiguration(configuration);
     }
 
     protected NServiceBusEndpoint(string endpointName, IConfiguration? configuration = null)
     {
         if (endpointName == null) throw new ArgumentNullException(nameof(endpointName));
 
-        _configurationManager = new TEndpointConfigurationManager();
-        _endpointConfiguration = _configurationManager.CreateEndpointConfiguration(endpointName, configuration);
+        ConfigurationManager = new TEndpointConfigurationManager();
+        _endpointConfiguration = ConfigurationManager.CreateEndpointConfiguration(endpointName, configuration);
     }
     
     public static implicit operator EndpointConfiguration(NServiceBusEndpoint<TEndpointConfigurationManager, TTransport> endpoint)
@@ -46,22 +46,22 @@ public abstract class NServiceBusEndpoint<TEndpointConfigurationManager, TTransp
     
     public SerializationExtensions<T> ReplaceDefaultSerializer<T>() where T : SerializationDefinition, new()
     {
-        return _configurationManager.ReplaceDefaultSerializer<T>();
+        return ConfigurationManager.ReplaceDefaultSerializer<T>();
     }
     
     public void CustomizeDefaultSerializer(Action<SerializationExtensions<SystemJsonSerializer>>? serializerCustomization)
     {
-        _configurationManager.CustomizeDefaultSerializer(serializerCustomization);
+        ConfigurationManager.CustomizeDefaultSerializer(serializerCustomization);
     }
     
     public void CustomizeTransport(Action<TTransport> transportCustomization)
     {
-        _configurationManager.CustomizeTransport(transportCustomization);
+        ConfigurationManager.CustomizeTransport(transportCustomization);
     }
     
     public void OverrideTransport(Func<IConfiguration?, TTransport> transportFactory)
     {
-        _configurationManager.OverrideTransport(transportFactory);
+        ConfigurationManager.OverrideTransport(transportFactory);
     }
     
     public async Task<IEndpointInstance> Start()
