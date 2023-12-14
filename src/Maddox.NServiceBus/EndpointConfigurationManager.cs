@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using NServiceBus.Serialization;
 using NServiceBus.Transport;
 
-namespace NServiceBoXes.Endpoints;
+namespace Maddox.NServiceBus;
 
 public abstract class EndpointConfigurationManager<TTransport>
     where TTransport : TransportDefinition

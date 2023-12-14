@@ -3,7 +3,7 @@ using NServiceBus.Persistence;
 using NServiceBus.Serialization;
 using NServiceBus.Transport;
 
-namespace NServiceBoXes.Endpoints;
+namespace Maddox.NServiceBus;
 
 public abstract class NServiceBusEndpoint<TEndpointConfigurationManager, TTransport> 
     where TTransport : TransportDefinition 

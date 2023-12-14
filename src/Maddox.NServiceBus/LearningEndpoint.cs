@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Configuration;
 
-namespace NServiceBoXes.Endpoints;
+namespace Maddox.NServiceBus;
 
 public class LearningEndpoint : NServiceBusEndpoint<LearningEndpointConfigurationManager, LearningTransport>
 {
