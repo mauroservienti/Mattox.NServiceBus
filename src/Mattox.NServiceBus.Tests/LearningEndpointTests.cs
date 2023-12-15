@@ -46,10 +46,11 @@ public class LearningEndpointTests
     public void Using_env_var_configuration_respect_endpoint_name()
     {
         const string expectedEndpointName = "my-endpoint";
-        Environment.SetEnvironmentVariable("NServiceBus:EndpointConfiguration:EndpointName", expectedEndpointName);
-        
         var config = new ConfigurationBuilder()
-            .AddEnvironmentVariables()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                {"NServiceBus:EndpointConfiguration:EndpointName", expectedEndpointName}        
+            })
             .Build();
         
         var endpoint = new LearningEndpoint(config);
@@ -63,10 +64,11 @@ public class LearningEndpointTests
     [Fact]
     public void When_auditing_is_disabled_no_audit_queue_is_configured()
     {
-        Environment.SetEnvironmentVariable("NServiceBus:EndpointConfiguration:Auditing:Enabled", "False");
-        
         var config = new ConfigurationBuilder()
-            .AddEnvironmentVariables()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                {"NServiceBus:EndpointConfiguration:Auditing:Enabled", "False"}        
+            })
             .Build();
         
         var endpoint = new LearningEndpoint("my-endpoint", config);
@@ -82,10 +84,11 @@ public class LearningEndpointTests
     public void When_setting_error_queue_name_is_set_as_expected()
     {
         const string expectedErrorQueue = "my-error_queue";
-        Environment.SetEnvironmentVariable("NServiceBus:EndpointConfiguration:Recoverability:ErrorQueue", expectedErrorQueue);
-        
         var config = new ConfigurationBuilder()
-            .AddEnvironmentVariables()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                {"NServiceBus:EndpointConfiguration:Recoverability:ErrorQueue", expectedErrorQueue}        
+            })
             .Build();
         
         var endpoint = new LearningEndpoint("my-endpoint", config);
