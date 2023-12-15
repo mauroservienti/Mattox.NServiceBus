@@ -97,6 +97,9 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
                     }
                 });
         }
+        
+        // TODO Automatic rate limiting
+        // https://docs.particular.net/nservicebus/recoverability/#automatic-rate-limiting
     }
     
     protected static string GetEndpointNameFromConfigurationOrThrow(IConfiguration configuration)
