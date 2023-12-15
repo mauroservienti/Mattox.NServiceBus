@@ -173,7 +173,13 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
                     }
                 });
         }
+        
+        // TODO allow to customize with a delegate the Failed policy
+        // recoverabilityConfiguration.Failed()
 
+        // TODO allow to register with a delegate a custom retry policy 
+        // recoverabilityConfiguration.CustomPolicy()
+        
         // TODO Automatic rate limiting
         // https://docs.particular.net/nservicebus/recoverability/#automatic-rate-limiting
     }
