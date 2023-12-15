@@ -9,9 +9,9 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 {
     const string NServiceBusEndpointConfigurationSectionName = "NServiceBus:EndpointConfiguration";
     readonly IConfiguration? _configuration;
-    protected EndpointConfiguration EndpointConfiguration{ get; }
+    protected EndpointConfiguration EndpointConfiguration { get; }
     protected IConfigurationSection? EndpointConfigurationSection { get; }
-    
+
     Action<SerializationExtensions<SystemJsonSerializer>>? _serializerCustomization;
     bool _useDefaultSerializer = true;
 
@@ -23,18 +23,17 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     protected NServiceBusEndpoint(IConfiguration configuration)
         : this(GetEndpointNameFromConfigurationOrThrow(configuration), configuration)
     {
-        
     }
 
     protected NServiceBusEndpoint(string endpointName, IConfiguration? configuration = null)
     {
         if (endpointName == null) throw new ArgumentNullException(nameof(endpointName));
-        
+
         _configuration = configuration;
         EndpointConfiguration = new EndpointConfiguration(endpointName);
         EndpointConfigurationSection = configuration?.GetSection(NServiceBusEndpointConfigurationSectionName);
     }
-    
+
     protected abstract TTransport CreateTransport(IConfigurationSection? transportConfigurationSection);
 
     protected static void ApplyCommonTransportSettings(IConfigurationSection? transportConfigurationSection,
@@ -42,12 +41,14 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     {
         if (transportConfigurationSection?["TransportTransactionMode"] is { } transportTransactionMode)
         {
-            Enum.TryParse(transportTransactionMode, ignoreCase: false, out TransportTransactionMode transportTransportTransactionMode);
+            Enum.TryParse(transportTransactionMode, ignoreCase: false,
+                out TransportTransactionMode transportTransportTransactionMode);
             transport.TransportTransactionMode = transportTransportTransactionMode;
         }
     }
-    
-    static void ConfigureAuditing(EndpointConfiguration endpointConfiguration, IConfigurationSection? endpointConfigurationSection)
+
+    static void ConfigureAuditing(EndpointConfiguration endpointConfiguration,
+        IConfigurationSection? endpointConfigurationSection)
     {
         var auditSection = endpointConfigurationSection?.GetSection("Auditing");
         var enableAuditing = bool.Parse(auditSection?["Enabled"] ?? true.ToString());
@@ -60,13 +61,14 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         endpointConfiguration.AuditProcessedMessagesTo(auditQueue);
     }
 
-    static void ConfigureRecoverability(EndpointConfiguration endpointConfiguration, IConfigurationSection? endpointConfigurationSection)
+    static void ConfigureRecoverability(EndpointConfiguration endpointConfiguration,
+        IConfigurationSection? endpointConfigurationSection)
     {
         var recoverabilitySection = endpointConfigurationSection?.GetSection("Recoverability");
-        
+
         var errorQueue = recoverabilitySection?["ErrorQueue"] ?? "error";
         endpointConfiguration.SendFailedMessagesTo(errorQueue);
-        
+
         var recoverabilityConfiguration = endpointConfiguration.Recoverability();
 
         if (recoverabilitySection?.GetSection("Immediate") is { } immediateSection)
@@ -74,25 +76,26 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             recoverabilityConfiguration.Immediate(
                 immediate =>
                 {
-                    if(immediateSection["NumberOfRetries"] is {} numberOfRetries)
+                    if (immediateSection["NumberOfRetries"] is { } numberOfRetries)
                     {
                         immediate.NumberOfRetries(int.Parse(numberOfRetries));
                     }
-                }); 
+                });
         }
-        
-        if(recoverabilitySection?.GetSection("Delayed") is { } delayedSection)
+
+        if (recoverabilitySection?.GetSection("Delayed") is { } delayedSection)
         {
             recoverabilityConfiguration.Delayed(
                 delayed =>
                 {
-                    if(delayedSection["NumberOfRetries"] is { } numberOfRetries)
+                    if (delayedSection["NumberOfRetries"] is { } numberOfRetries)
                     {
                         delayed.NumberOfRetries(int.Parse(numberOfRetries));
                     }
-                    
-                    if (delayedSection["TimeIncrease"] is {} timeIncrease)
-                    {;
+
+                    if (delayedSection["TimeIncrease"] is { } timeIncrease)
+                    {
+                        ;
                         delayed.TimeIncrease(TimeSpan.Parse(timeIncrease));
                     }
                 });
@@ -101,7 +104,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO Automatic rate limiting
         // https://docs.particular.net/nservicebus/recoverability/#automatic-rate-limiting
     }
-    
+
     protected static string GetEndpointNameFromConfigurationOrThrow(IConfiguration configuration)
     {
         if (configuration == null)
@@ -114,12 +117,12 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
                    "EndpointName cannot be null. Make sure the " +
                    "NServiceBus:EndpointConfiguration:EndpointName configuration section is set.");
     }
-    
+
     protected virtual void FinalizeConfiguration()
     {
         ConfigureAuditing(EndpointConfiguration, EndpointConfigurationSection);
         ConfigureRecoverability(EndpointConfiguration, EndpointConfigurationSection);
-        
+
         if (_useDefaultSerializer)
         {
             var serializerConfiguration = EndpointConfiguration.UseSerialization<SystemJsonSerializer>();
@@ -127,11 +130,13 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         }
 
         var transportConfigurationSection = EndpointConfigurationSection?.GetSection("Transport");
-        Transport = _transportFactory != null ? _transportFactory(_configuration) : CreateTransport(transportConfigurationSection);
+        Transport = _transportFactory != null
+            ? _transportFactory(_configuration)
+            : CreateTransport(transportConfigurationSection);
 
         _transportCustomization?.Invoke(Transport);
         EndpointConfiguration.UseTransport(Transport);
-        
+
         // TODO create and configure the persistence
         // TODO Outbox
         
@@ -140,75 +145,76 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         
         // TODO - default off
         // EndpointConfiguration.EnableInstallers();
-        
+
         // TODO - default not set 
         // EndpointConfiguration.LimitMessageProcessingConcurrencyTo();
-        
+
         // TODO License:Text
         // EndpointConfiguration.License();
-        
+
         // TODO License:Path
         //EndpointConfiguration.LicensePath();
-        
+
         // TODO
         // EndpointConfiguration.EnableOpenTelemetry();
-        
+
         // TODO
         // EndpointConfiguration.PurgeOnStartup();
-        
+
         // TODO
         // EndpointConfiguration.OverrideLocalAddress();
-        
+
         // TODO
         // EndpointConfiguration.OverridePublicReturnAddress();
 
         // TODO
         // EndpointConfiguration.SetDiagnosticsPath();
-        
+
         // TODO
         // EndpointConfiguration.MakeInstanceUniquelyAddressable();
-        
+
         // TODO
         // EndpointConfiguration.UniquelyIdentifyRunningInstance();
 
         endpointConfigurationPreview?.Invoke(EndpointConfiguration);
     }
-    
+
     public static implicit operator EndpointConfiguration(NServiceBusEndpoint<TTransport> endpoint)
     {
         endpoint.FinalizeConfiguration();
         return endpoint.EndpointConfiguration;
-    } 
-    
+    }
+
     public PersistenceExtensions<T> UsePersistence<T>()
         where T : PersistenceDefinition
     {
         return EndpointConfiguration.UsePersistence<T>();
     }
-    
+
     public PersistenceExtensions<T, S> UsePersistence<T, S>()
         where T : PersistenceDefinition
         where S : StorageType
     {
         return EndpointConfiguration.UsePersistence<T, S>();
     }
-    
+
     public SerializationExtensions<T> ReplaceDefaultSerializer<T>() where T : SerializationDefinition, new()
     {
         _useDefaultSerializer = false;
         return EndpointConfiguration.UseSerialization<T>();
     }
-    
-    public void CustomizeDefaultSerializer(Action<SerializationExtensions<SystemJsonSerializer>> serializerCustomization)
+
+    public void CustomizeDefaultSerializer(
+        Action<SerializationExtensions<SystemJsonSerializer>> serializerCustomization)
     {
         _serializerCustomization = serializerCustomization;
     }
-    
+
     public void CustomizeTransport(Action<TTransport> transportCustomization)
     {
         _transportCustomization = transportCustomization;
     }
-    
+
     public void OverrideTransport(Func<IConfiguration?, TTransport> transportFactory)
     {
         _transportFactory = transportFactory;
@@ -218,7 +224,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     {
         endpointConfigurationPreview = endpointConfiguration;
     }
-    
+
     public async Task<IEndpointInstance> Start()
     {
         FinalizeConfiguration();
