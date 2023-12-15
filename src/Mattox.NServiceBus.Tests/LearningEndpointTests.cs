@@ -96,4 +96,41 @@ public class LearningEndpointTests
 
         Assert.Equal(expectedErrorQueue, actualErrorQueue);
     }
+
+    [Fact]
+    public void When_setting_endpoint_config_preview_delegate_is_invoked_when_retrieving_config()
+    {
+        var handlerInvoked = false;
+        var endpoint = new LearningEndpoint("my-endpoint");
+        endpoint.PreviewConfiguration(configuration =>
+        {
+            handlerInvoked = true;
+        });
+        EndpointConfiguration endpointConfiguration = endpoint;
+        
+        Assert.True(handlerInvoked);
+    }
+    
+    [Fact]
+    public async Task When_setting_endpoint_config_preview_delegate_is_invoked_when_starting_endpoint()
+    {
+        var handlerInvoked = false;
+        var endpoint = new LearningEndpoint("my-endpoint");
+        endpoint.PreviewConfiguration(configuration =>
+        {
+            handlerInvoked = true;
+        });
+
+        IEndpointInstance? instance = null;
+        try
+        {
+            instance = await endpoint.Start();
+        }
+        finally
+        {
+            await instance?.Stop()!;
+        }
+        
+        Assert.True(handlerInvoked);
+    }
 }

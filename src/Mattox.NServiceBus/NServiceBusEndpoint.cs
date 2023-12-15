@@ -18,6 +18,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     protected TTransport Transport { get; private set; } = null!;
     Action<TTransport>? _transportCustomization;
     Func<IConfiguration?, TTransport>? _transportFactory;
+    Action<EndpointConfiguration>? endpointConfigurationPreview;
 
     protected NServiceBusEndpoint(IConfiguration configuration)
         : this(GetEndpointNameFromConfigurationOrThrow(configuration), configuration)
@@ -127,8 +128,8 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         _transportCustomization?.Invoke(Transport);
         EndpointConfiguration.UseTransport(Transport);
-        
-        // TODO create and configure the persistence
+
+        endpointConfigurationPreview?.Invoke(EndpointConfiguration);
     }
     
     public static implicit operator EndpointConfiguration(NServiceBusEndpoint<TTransport> endpoint)
@@ -169,6 +170,11 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     public void OverrideTransport(Func<IConfiguration?, TTransport> transportFactory)
     {
         _transportFactory = transportFactory;
+    }
+
+    public void PreviewConfiguration(Action<EndpointConfiguration> endpointConfiguration)
+    {
+        endpointConfigurationPreview = endpointConfiguration;
     }
     
     public async Task<IEndpointInstance> Start()
