@@ -133,4 +133,40 @@ public class LearningEndpointTests
         
         Assert.True(handlerInvoked);
     }
+
+    [Fact]
+    public void Setting_send_only_creates_send_only_endpoint()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                {"NServiceBus:EndpointConfiguration:SendOnly", true.ToString()}        
+            })
+            .Build();
+        
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        EndpointConfiguration endpointConfiguration = endpoint;
+        
+        var settings = endpointConfiguration.GetSettings();
+        var isSendOnly = settings.GetOrDefault<bool>("Endpoint.SendOnly");
+        
+        Assert.True(isSendOnly);
+    }
+    
+    [Fact]
+    public void Setting_send_only_to_invalid_bool_throws()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                {"NServiceBus:EndpointConfiguration:SendOnly", "cannot be parsed to a bool"}        
+            })
+            .Build();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var endpoint = new LearningEndpoint("my-endpoint", config);
+            EndpointConfiguration endpointConfiguration = endpoint; 
+        });
+    }
 }

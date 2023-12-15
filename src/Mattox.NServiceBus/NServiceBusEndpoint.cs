@@ -139,10 +139,17 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         // TODO create and configure the persistence
         // TODO Outbox
-        
-        // TODO - default false
-        // EndpointConfiguration.SendOnly();
-        
+
+        if (!bool.TryParse(EndpointConfigurationSection?["SendOnly"] ?? bool.FalseString, out var isSendOnly))
+        {
+            throw new ArgumentException("SendOnly value cannot be parsed to a bool.");
+        }
+
+        if (isSendOnly)
+        {
+            EndpointConfiguration.SendOnly();
+        }
+
         // TODO - default off
         // EndpointConfiguration.EnableInstallers();
 
