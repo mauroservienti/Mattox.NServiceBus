@@ -99,9 +99,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // EndpointConfiguration.EnableOpenTelemetry();
 
         // TODO
-        // EndpointConfiguration.PurgeOnStartup();
-
-        // TODO
         // EndpointConfiguration.OverrideLocalAddress();
 
         // TODO
