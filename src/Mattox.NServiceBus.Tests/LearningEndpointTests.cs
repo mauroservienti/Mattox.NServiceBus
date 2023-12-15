@@ -172,4 +172,40 @@ public class LearningEndpointTests
             EndpointConfiguration endpointConfiguration = endpoint; 
         });
     }
+    
+    [Fact]
+    public void Enabling_installers_creates_endpoint_with_installers()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                {"NServiceBus:EndpointConfiguration:Installers:Enable", true.ToString()}
+            })
+            .Build();
+        
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        EndpointConfiguration endpointConfiguration = endpoint;
+        
+        var settings = endpointConfiguration.GetSettings();
+        var installersEnabled = settings.GetOrDefault<bool>("Installers.Enable");
+        
+        Assert.True(installersEnabled);
+    }
+    
+    [Fact]
+    public void Enabling_installers_with_non_parsable_value_throws()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                {"NServiceBus:EndpointConfiguration:Installers:Enable", "cannot be parsed to a bool"}        
+            })
+            .Build();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var endpoint = new LearningEndpoint("my-endpoint", config);
+            EndpointConfiguration endpointConfiguration = endpoint; 
+        });
+    }
 }

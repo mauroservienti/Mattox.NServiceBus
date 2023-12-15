@@ -150,9 +150,16 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             EndpointConfiguration.SendOnly();
         }
 
-        // TODO - default off
-        // EndpointConfiguration.EnableInstallers();
+        if (!bool.TryParse(EndpointConfigurationSection?.GetSection("Installers")?["Enable"] ?? bool.FalseString, out var enableInstallers))
+        {
+            throw new ArgumentException("Installers.Enable value cannot be parsed to a bool.");
+        }
 
+        if (enableInstallers)
+        {
+            EndpointConfiguration.EnableInstallers();
+        }
+        
         // TODO - default not set 
         // EndpointConfiguration.LimitMessageProcessingConcurrencyTo();
 
