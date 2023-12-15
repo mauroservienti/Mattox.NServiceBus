@@ -80,6 +80,8 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         _transportCustomization?.Invoke(Transport);
         EndpointConfiguration.UseTransport(Transport);
+        
+        ConfigurePurgeOnStartup(EndpointConfiguration, transportConfigurationSection);
 
         // TODO create and configure the persistence
         // TODO Outbox
@@ -202,6 +204,20 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         if (isSendOnly)
         {
             endpointConfiguration.SendOnly();
+        }
+    }
+
+    static void ConfigurePurgeOnStartup(EndpointConfiguration endpointConfiguration,
+        IConfigurationSection? transportConfigurationSection)
+    {
+        if (!bool.TryParse(transportConfigurationSection?["PurgeOnStartup"] ?? bool.FalseString, out var purgeOnStartup))
+        {
+            throw new ArgumentException("PurgeOnStartup value cannot be parsed to a bool.");
+        }
+
+        if (purgeOnStartup)
+        {
+            endpointConfiguration.PurgeOnStartup(true);
         }
     }
 

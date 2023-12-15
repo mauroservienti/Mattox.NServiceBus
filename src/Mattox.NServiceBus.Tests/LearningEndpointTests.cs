@@ -208,4 +208,40 @@ public class LearningEndpointTests
             EndpointConfiguration endpointConfiguration = endpoint;
         });
     }
+    
+    [Fact]
+    public void Setting_purge_on_startup_creates_endpoint_with_purge_on_startup()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Transport:PurgeOnStartup", true.ToString() }
+            })
+            .Build();
+
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        var purgeOnStartup = settings.GetOrDefault<bool>("Transport.PurgeOnStartup");
+
+        Assert.True(purgeOnStartup);
+    }
+
+    [Fact]
+    public void Setting_purge_on_startup_to_non_parsable_value_throws()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Transport:PurgeOnStartup", "cannot be parsed to a bool" }
+            })
+            .Build();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var endpoint = new LearningEndpoint("my-endpoint", config);
+            EndpointConfiguration endpointConfiguration = endpoint;
+        });
+    }
 }
