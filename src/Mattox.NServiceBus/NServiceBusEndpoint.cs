@@ -176,6 +176,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         // TODO
         // EndpointConfiguration.SetDiagnosticsPath();
+        // disable: EndpointConfiguration.CustomDiagnosticsWriter((_, _) => Task.CompletedTask);
 
         // TODO
         // EndpointConfiguration.MakeInstanceUniquelyAddressable();
