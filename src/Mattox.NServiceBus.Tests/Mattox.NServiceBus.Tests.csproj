@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Maddox.NServiceBus\Maddox.NServiceBus.csproj" />
+      <ProjectReference Include="..\Mattox.NServiceBus\Mattox.NServiceBus.csproj" />
     </ItemGroup>
 
     <ItemGroup>
