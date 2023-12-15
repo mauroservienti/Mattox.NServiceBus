@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using NServiceBus;
 using NServiceBus.Configuration.AdvancedExtensibility;
 
-namespace Maddox.NServiceBus.Tests;
+namespace Mattox.NServiceBus.Tests;
 
 public class LearningEndpointTests
 {
