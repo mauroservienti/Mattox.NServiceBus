@@ -128,6 +128,45 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         _transportCustomization?.Invoke(Transport);
         EndpointConfiguration.UseTransport(Transport);
+        
+        // TODO create and configure the persistence
+        // TODO Outbox
+        
+        // TODO - default false
+        // EndpointConfiguration.SendOnly();
+        
+        // TODO - default off
+        // EndpointConfiguration.EnableInstallers();
+        
+        // TODO - default not set 
+        // EndpointConfiguration.LimitMessageProcessingConcurrencyTo();
+        
+        // TODO License:Text
+        // EndpointConfiguration.License();
+        
+        // TODO License:Path
+        //EndpointConfiguration.LicensePath();
+        
+        // TODO
+        // EndpointConfiguration.EnableOpenTelemetry();
+        
+        // TODO
+        // EndpointConfiguration.PurgeOnStartup();
+        
+        // TODO
+        // EndpointConfiguration.OverrideLocalAddress();
+        
+        // TODO
+        // EndpointConfiguration.OverridePublicReturnAddress();
+
+        // TODO
+        // EndpointConfiguration.SetDiagnosticsPath();
+        
+        // TODO
+        // EndpointConfiguration.MakeInstanceUniquelyAddressable();
+        
+        // TODO
+        // EndpointConfiguration.UniquelyIdentifyRunningInstance();
 
         endpointConfigurationPreview?.Invoke(EndpointConfiguration);
     }
