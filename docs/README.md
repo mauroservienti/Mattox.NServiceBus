@@ -1,6 +1,6 @@
 # Configuration
 
-Maddox.NServiceBus endpoints can be configured through the [`Microsoft.Extensions.Configuration`](https://www.nuget.org/packages/Microsoft.Extensions.Configuration). All settings are defined in the `NServiceBus:EndpointConfiguration` section. Different endpoints supporting different transport may define additional settings. Refer to the endpoint-specific documentation for more details.
+Mattox.NServiceBus endpoints can be configured through the [`Microsoft.Extensions.Configuration`](https://www.nuget.org/packages/Microsoft.Extensions.Configuration). All settings are defined in the `NServiceBus:EndpointConfiguration` section. Different endpoints supporting different transport may define additional settings. Refer to the endpoint-specific documentation for more details.
 
 ## Endpoint name
 
