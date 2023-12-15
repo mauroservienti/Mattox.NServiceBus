@@ -100,7 +100,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
                     }
                 });
         }
-        
+
         // TODO Automatic rate limiting
         // https://docs.particular.net/nservicebus/recoverability/#automatic-rate-limiting
     }
@@ -150,7 +150,8 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             EndpointConfiguration.SendOnly();
         }
 
-        if (!bool.TryParse(EndpointConfigurationSection?.GetSection("Installers")?["Enable"] ?? bool.FalseString, out var enableInstallers))
+        if (!bool.TryParse(EndpointConfigurationSection?.GetSection("Installers")?["Enable"] ?? bool.FalseString,
+                out var enableInstallers))
         {
             throw new ArgumentException("Installers.Enable value cannot be parsed to a bool.");
         }
@@ -159,7 +160,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         {
             EndpointConfiguration.EnableInstallers();
         }
-        
+
         // TODO - default not set 
         // EndpointConfiguration.LimitMessageProcessingConcurrencyTo();
 
