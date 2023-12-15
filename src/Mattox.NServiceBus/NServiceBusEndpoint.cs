@@ -62,26 +62,14 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
     protected virtual void FinalizeConfiguration()
     {
+        var transportConfigurationSection = EndpointConfigurationSection?.GetSection("Transport");
+        ConfigureTransport(transportConfigurationSection);
+        ConfigurePurgeOnStartup(EndpointConfiguration, transportConfigurationSection);
         ConfigureAuditing(EndpointConfiguration, EndpointConfigurationSection);
         ConfigureRecoverability(EndpointConfiguration, EndpointConfigurationSection);
         ConfigureSendOnly(EndpointConfiguration, EndpointConfigurationSection);
         ConfigureInstallers(EndpointConfiguration, EndpointConfigurationSection);
-
-        if (_useDefaultSerializer)
-        {
-            var serializerConfiguration = EndpointConfiguration.UseSerialization<SystemJsonSerializer>();
-            _serializerCustomization?.Invoke(serializerConfiguration);
-        }
-
-        var transportConfigurationSection = EndpointConfigurationSection?.GetSection("Transport");
-        Transport = _transportFactory != null
-            ? _transportFactory(_configuration)
-            : CreateTransport(transportConfigurationSection);
-
-        _transportCustomization?.Invoke(Transport);
-        EndpointConfiguration.UseTransport(Transport);
-        
-        ConfigurePurgeOnStartup(EndpointConfiguration, transportConfigurationSection);
+        ConfigureSerializer();
 
         // TODO create and configure the persistence
         // TODO Outbox
@@ -115,6 +103,25 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // EndpointConfiguration.UniquelyIdentifyRunningInstance();
 
         endpointConfigurationPreview?.Invoke(EndpointConfiguration);
+    }
+
+    void ConfigureSerializer()
+    {
+        if (_useDefaultSerializer)
+        {
+            var serializerConfiguration = EndpointConfiguration.UseSerialization<SystemJsonSerializer>();
+            _serializerCustomization?.Invoke(serializerConfiguration);
+        }
+    }
+
+    void ConfigureTransport(IConfigurationSection? transportConfigurationSection)
+    {
+        Transport = _transportFactory != null
+            ? _transportFactory(_configuration)
+            : CreateTransport(transportConfigurationSection);
+
+        _transportCustomization?.Invoke(Transport);
+        EndpointConfiguration.UseTransport(Transport);
     }
 
     static void ConfigureAuditing(EndpointConfiguration endpointConfiguration,
@@ -170,13 +177,13 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
                     }
                 });
         }
-        
+
         // TODO allow to customize with a delegate the Failed policy
         // recoverabilityConfiguration.Failed()
 
         // TODO allow to register with a delegate a custom retry policy 
         // recoverabilityConfiguration.CustomPolicy()
-        
+
         // TODO Automatic rate limiting
         // https://docs.particular.net/nservicebus/recoverability/#automatic-rate-limiting
     }
@@ -213,7 +220,8 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     static void ConfigurePurgeOnStartup(EndpointConfiguration endpointConfiguration,
         IConfigurationSection? transportConfigurationSection)
     {
-        if (!bool.TryParse(transportConfigurationSection?["PurgeOnStartup"] ?? bool.FalseString, out var purgeOnStartup))
+        if (!bool.TryParse(transportConfigurationSection?["PurgeOnStartup"] ?? bool.FalseString,
+                out var purgeOnStartup))
         {
             throw new ArgumentException("PurgeOnStartup value cannot be parsed to a bool.");
         }
