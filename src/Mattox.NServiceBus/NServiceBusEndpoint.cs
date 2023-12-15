@@ -47,6 +47,77 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         }
     }
 
+    protected static string GetEndpointNameFromConfigurationOrThrow(IConfiguration configuration)
+    {
+        if (configuration == null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        return configuration.GetSection(NServiceBusEndpointConfigurationSectionName)["EndpointName"]
+               ?? throw new ArgumentException(
+                   "EndpointName cannot be null. Make sure the " +
+                   "NServiceBus:EndpointConfiguration:EndpointName configuration section is set.");
+    }
+
+    protected virtual void FinalizeConfiguration()
+    {
+        ConfigureAuditing(EndpointConfiguration, EndpointConfigurationSection);
+        ConfigureRecoverability(EndpointConfiguration, EndpointConfigurationSection);
+        ConfigureSendOnly(EndpointConfiguration, EndpointConfigurationSection);
+        ConfigureInstallers(EndpointConfiguration, EndpointConfigurationSection);
+
+        if (_useDefaultSerializer)
+        {
+            var serializerConfiguration = EndpointConfiguration.UseSerialization<SystemJsonSerializer>();
+            _serializerCustomization?.Invoke(serializerConfiguration);
+        }
+
+        var transportConfigurationSection = EndpointConfigurationSection?.GetSection("Transport");
+        Transport = _transportFactory != null
+            ? _transportFactory(_configuration)
+            : CreateTransport(transportConfigurationSection);
+
+        _transportCustomization?.Invoke(Transport);
+        EndpointConfiguration.UseTransport(Transport);
+
+        // TODO create and configure the persistence
+        // TODO Outbox
+
+        // TODO - default not set 
+        // EndpointConfiguration.LimitMessageProcessingConcurrencyTo();
+
+        // TODO License:Text
+        // EndpointConfiguration.License();
+
+        // TODO License:Path
+        //EndpointConfiguration.LicensePath();
+
+        // TODO
+        // EndpointConfiguration.EnableOpenTelemetry();
+
+        // TODO
+        // EndpointConfiguration.PurgeOnStartup();
+
+        // TODO
+        // EndpointConfiguration.OverrideLocalAddress();
+
+        // TODO
+        // EndpointConfiguration.OverridePublicReturnAddress();
+
+        // TODO
+        // EndpointConfiguration.SetDiagnosticsPath();
+        // disable: EndpointConfiguration.CustomDiagnosticsWriter((_, _) => Task.CompletedTask);
+
+        // TODO
+        // EndpointConfiguration.MakeInstanceUniquelyAddressable();
+
+        // TODO
+        // EndpointConfiguration.UniquelyIdentifyRunningInstance();
+
+        endpointConfigurationPreview?.Invoke(EndpointConfiguration);
+    }
+
     static void ConfigureAuditing(EndpointConfiguration endpointConfiguration,
         IConfigurationSection? endpointConfigurationSection)
     {
@@ -105,52 +176,10 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // https://docs.particular.net/nservicebus/recoverability/#automatic-rate-limiting
     }
 
-    protected static string GetEndpointNameFromConfigurationOrThrow(IConfiguration configuration)
+    static void ConfigureInstallers(EndpointConfiguration endpointConfiguration,
+        IConfigurationSection? endpointConfigurationSection)
     {
-        if (configuration == null)
-        {
-            throw new ArgumentNullException(nameof(configuration));
-        }
-
-        return configuration.GetSection(NServiceBusEndpointConfigurationSectionName)["EndpointName"]
-               ?? throw new ArgumentException(
-                   "EndpointName cannot be null. Make sure the " +
-                   "NServiceBus:EndpointConfiguration:EndpointName configuration section is set.");
-    }
-
-    protected virtual void FinalizeConfiguration()
-    {
-        ConfigureAuditing(EndpointConfiguration, EndpointConfigurationSection);
-        ConfigureRecoverability(EndpointConfiguration, EndpointConfigurationSection);
-
-        if (_useDefaultSerializer)
-        {
-            var serializerConfiguration = EndpointConfiguration.UseSerialization<SystemJsonSerializer>();
-            _serializerCustomization?.Invoke(serializerConfiguration);
-        }
-
-        var transportConfigurationSection = EndpointConfigurationSection?.GetSection("Transport");
-        Transport = _transportFactory != null
-            ? _transportFactory(_configuration)
-            : CreateTransport(transportConfigurationSection);
-
-        _transportCustomization?.Invoke(Transport);
-        EndpointConfiguration.UseTransport(Transport);
-
-        // TODO create and configure the persistence
-        // TODO Outbox
-
-        if (!bool.TryParse(EndpointConfigurationSection?["SendOnly"] ?? bool.FalseString, out var isSendOnly))
-        {
-            throw new ArgumentException("SendOnly value cannot be parsed to a bool.");
-        }
-
-        if (isSendOnly)
-        {
-            EndpointConfiguration.SendOnly();
-        }
-
-        if (!bool.TryParse(EndpointConfigurationSection?.GetSection("Installers")?["Enable"] ?? bool.FalseString,
+        if (!bool.TryParse(endpointConfigurationSection?.GetSection("Installers")?["Enable"] ?? bool.FalseString,
                 out var enableInstallers))
         {
             throw new ArgumentException("Installers.Enable value cannot be parsed to a bool.");
@@ -158,41 +187,22 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         if (enableInstallers)
         {
-            EndpointConfiguration.EnableInstallers();
+            endpointConfiguration.EnableInstallers();
+        }
+    }
+
+    static void ConfigureSendOnly(EndpointConfiguration endpointConfiguration,
+        IConfigurationSection? endpointConfigurationSection)
+    {
+        if (!bool.TryParse(endpointConfigurationSection?["SendOnly"] ?? bool.FalseString, out var isSendOnly))
+        {
+            throw new ArgumentException("SendOnly value cannot be parsed to a bool.");
         }
 
-        // TODO - default not set 
-        // EndpointConfiguration.LimitMessageProcessingConcurrencyTo();
-
-        // TODO License:Text
-        // EndpointConfiguration.License();
-
-        // TODO License:Path
-        //EndpointConfiguration.LicensePath();
-
-        // TODO
-        // EndpointConfiguration.EnableOpenTelemetry();
-
-        // TODO
-        // EndpointConfiguration.PurgeOnStartup();
-
-        // TODO
-        // EndpointConfiguration.OverrideLocalAddress();
-
-        // TODO
-        // EndpointConfiguration.OverridePublicReturnAddress();
-
-        // TODO
-        // EndpointConfiguration.SetDiagnosticsPath();
-        // disable: EndpointConfiguration.CustomDiagnosticsWriter((_, _) => Task.CompletedTask);
-
-        // TODO
-        // EndpointConfiguration.MakeInstanceUniquelyAddressable();
-
-        // TODO
-        // EndpointConfiguration.UniquelyIdentifyRunningInstance();
-
-        endpointConfigurationPreview?.Invoke(EndpointConfiguration);
+        if (isSendOnly)
+        {
+            endpointConfiguration.SendOnly();
+        }
     }
 
     public static implicit operator EndpointConfiguration(NServiceBusEndpoint<TTransport> endpoint)
