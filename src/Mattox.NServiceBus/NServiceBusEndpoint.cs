@@ -9,12 +9,17 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 {
     const string NServiceBusEndpointConfigurationSectionName = "NServiceBus:EndpointConfiguration";
     readonly IConfiguration? _configuration;
+    
+    // TODO: Why do inheritors need the EndpointConfiguration?
     protected EndpointConfiguration EndpointConfiguration { get; }
+    
+    // TODO: Why do inheritors need the EndpointConfigurationSection?
     protected IConfigurationSection? EndpointConfigurationSection { get; }
 
     Action<SerializationExtensions<SystemJsonSerializer>>? _serializerCustomization;
     bool _useDefaultSerializer = true;
 
+    // TODO: Why do inheritors need the Transport?
     protected TTransport Transport { get; private set; } = null!;
     Action<TTransport>? _transportCustomization;
     Func<IConfiguration?, TTransport>? _transportFactory;
@@ -105,15 +110,19 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         endpointConfigurationPreview?.Invoke(EndpointConfiguration);
     }
 
+    // TODO: All the Configure* are static, should this one too?
     void ConfigureSerializer()
     {
-        if (_useDefaultSerializer)
+        if (!_useDefaultSerializer)
         {
-            var serializerConfiguration = EndpointConfiguration.UseSerialization<SystemJsonSerializer>();
-            _serializerCustomization?.Invoke(serializerConfiguration);
+            return;
         }
+
+        var serializerConfiguration = EndpointConfiguration.UseSerialization<SystemJsonSerializer>();
+        _serializerCustomization?.Invoke(serializerConfiguration);
     }
 
+    // TODO: All the Configure* are static, should this one too?
     void ConfigureTransport(IConfigurationSection? transportConfigurationSection)
     {
         Transport = _transportFactory != null
