@@ -69,6 +69,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     protected virtual void FinalizeConfiguration()
     {
         var transportConfigurationSection = EndpointConfigurationSection?.GetSection("Transport");
+        
         ConfigureTransport(transportConfigurationSection);
         ConfigurePurgeOnStartup(EndpointConfiguration, transportConfigurationSection);
         ConfigureAuditing(EndpointConfiguration, EndpointConfigurationSection);
