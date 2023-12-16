@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Configuration;
-using NServiceBus;
 using NServiceBus.Configuration.AdvancedExtensibility;
 
 namespace Mattox.NServiceBus.Tests;
