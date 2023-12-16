@@ -4,19 +4,19 @@ using NServiceBus.Persistence;
 using NServiceBus.Serialization;
 using NServiceBus.Transport;
 
-[assembly:InternalsVisibleTo("Mattox.NServiceBus.Tests")]
+[assembly: InternalsVisibleTo("Mattox.NServiceBus.Tests")]
 
 namespace Mattox.NServiceBus;
 
 public abstract class NServiceBusEndpoint<TTransport> where TTransport : TransportDefinition
 {
-    internal static readonly Func<string,CancellationToken,Task> emptyDiagnosticWriter = (_, _) => Task.CompletedTask;
+    internal static readonly Func<string, CancellationToken, Task> emptyDiagnosticWriter = (_, _) => Task.CompletedTask;
     const string NServiceBusEndpointConfigurationSectionName = "NServiceBus:EndpointConfiguration";
     readonly IConfiguration? _configuration;
-    
+
     // TODO: Why do inheritors need the EndpointConfiguration?
     protected EndpointConfiguration EndpointConfiguration { get; }
-    
+
     // TODO: Why do inheritors need the EndpointConfigurationSection?
     protected IConfigurationSection? EndpointConfigurationSection { get; }
 
@@ -73,7 +73,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     protected virtual void FinalizeConfiguration()
     {
         var transportConfigurationSection = EndpointConfigurationSection?.GetSection("Transport");
-        
+
         ConfigureTransport(transportConfigurationSection);
         ConfigurePurgeOnStartup(EndpointConfiguration, transportConfigurationSection);
         ConfigureAuditing(EndpointConfiguration, EndpointConfigurationSection);
@@ -243,7 +243,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             endpointConfiguration.PurgeOnStartup(true);
         }
     }
-    
+
     static void ConfigureDiagnostics(EndpointConfiguration endpointConfiguration,
         IConfigurationSection? endpointConfigurationSection)
     {
@@ -262,7 +262,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         var customPath = diagnosticsSection?["Path"];
         if (!string.IsNullOrWhiteSpace(customPath))
         {
-            endpointConfiguration.SetDiagnosticsPath(customPath);   
+            endpointConfiguration.SetDiagnosticsPath(customPath);
         }
     }
 

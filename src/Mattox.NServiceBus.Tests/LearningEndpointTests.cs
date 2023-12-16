@@ -207,7 +207,7 @@ public class LearningEndpointTests
             EndpointConfiguration endpointConfiguration = endpoint;
         });
     }
-    
+
     [Fact]
     public void Setting_purge_on_startup_creates_endpoint_with_purge_on_startup()
     {
@@ -243,7 +243,7 @@ public class LearningEndpointTests
             EndpointConfiguration endpointConfiguration = endpoint;
         });
     }
-    
+
     [Fact]
     public void Setting_diagnostics_path_creates_endpoint_with_custom_path()
     {
@@ -263,7 +263,7 @@ public class LearningEndpointTests
 
         Assert.Equal(expectedPath, path);
     }
-    
+
     [Fact]
     public void Setting_diagnostics_empty_path_makes_no_changes()
     {
@@ -283,7 +283,7 @@ public class LearningEndpointTests
 
         Assert.Null(path);
     }
-    
+
     [Fact]
     public void Disabling_diagnostics_creates_endpoint_with_no_diagnostics()
     {
@@ -302,7 +302,7 @@ public class LearningEndpointTests
 
         Assert.Equal(LearningEndpoint.emptyDiagnosticWriter, writer);
     }
-    
+
     [Fact]
     public void Setting_diagnostics_enable_to_non_parsable_value_throws()
     {
