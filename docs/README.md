@@ -8,6 +8,22 @@ Root section: `NServiceBus:EndpointConfiguration`.
 
 - `EndpointName` configures the endpoint name. This setting is mandatory unless specified through the endpoint class constructor.
 
+## SendOnly
+
+- `SendOnly` (`True`/`False`, defaults to `False`) configures the endpoint as a [send only endpoint](https://docs.particular.net/nservicebus/hosting/#self-hosting-send-only-hosting).
+
+## Installers
+
+Section full name: `NServiceBus:EndpointConfiguration:Installers`
+
+- `Enable` (`True`/`False`, defaults to `False`) enables the [endpoint installers](https://docs.particular.net/nservicebus/operations/installers).
+
+## Startup diagnostics
+
+Section full name:  `NServiceBus:EndpointConfiguration:Diagnostics`
+
+- `Enable` (`True`/`False`, defaults to `True`) enables the [endpoint startup diagnostics](https://docs.particular.net/nservicebus/hosting/startup-diagnostics).
+
 ## Auditing
 
 Section full name: `NServiceBus:EndpointConfiguration:Auditing`
@@ -41,3 +57,17 @@ The `Delayed` sub-section allows controlling [delayed retry settings](https://do
 
 - `NumberOfRetries` defines the number of times a failing message is retried in a delayed fashion.
 - `TimeIncrease` (format: `TimeStamp`) defines how much delay is used between delayed retries
+
+## Transport
+
+Section full name: `NServiceBus:EndpointConfiguration:Transport`
+
+### PurgeOnStartup
+
+NOTE: It's suggested to not discard messages in production.
+
+- `PurgeOnStartup` (`True`/`False`, defaults to `False`) configures the endpoint to [discard input queue messages](https://docs.particular.net/nservicebus/messaging/discard-old-messages#discarding-messages-at-startup) a startup and start fresh.
+
+### Transport Transaction
+
+- `TransportTransactionMode` (TransactionScope, SendsAtomicWithReceive, ReceiveOnly, None. The default value depends on the transport of choice) allows defining the [endpoint message processing transaction guarantees](https://docs.particular.net/transports/transactions).
