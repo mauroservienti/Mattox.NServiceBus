@@ -1,12 +1,16 @@
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Configuration;
 using NServiceBus.Persistence;
 using NServiceBus.Serialization;
 using NServiceBus.Transport;
 
+[assembly:InternalsVisibleTo("Mattox.NServiceBus.Tests")]
+
 namespace Mattox.NServiceBus;
 
 public abstract class NServiceBusEndpoint<TTransport> where TTransport : TransportDefinition
 {
+    internal static readonly Func<string,CancellationToken,Task> emptyDiagnosticWriter = (_, _) => Task.CompletedTask;
     const string NServiceBusEndpointConfigurationSectionName = "NServiceBus:EndpointConfiguration";
     readonly IConfiguration? _configuration;
     
@@ -77,6 +81,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         ConfigureSendOnly(EndpointConfiguration, EndpointConfigurationSection);
         ConfigureInstallers(EndpointConfiguration, EndpointConfigurationSection);
         ConfigureSerializer();
+        ConfigureDiagnostics(EndpointConfiguration, EndpointConfigurationSection);
 
         // TODO create and configure the persistence
         // TODO Outbox
@@ -98,10 +103,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         // TODO
         // EndpointConfiguration.OverridePublicReturnAddress();
-
-        // TODO
-        // EndpointConfiguration.SetDiagnosticsPath();
-        // disable: EndpointConfiguration.CustomDiagnosticsWriter((_, _) => Task.CompletedTask);
 
         // TODO
         // EndpointConfiguration.MakeInstanceUniquelyAddressable();
@@ -240,6 +241,28 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         if (purgeOnStartup)
         {
             endpointConfiguration.PurgeOnStartup(true);
+        }
+    }
+    
+    static void ConfigureDiagnostics(EndpointConfiguration endpointConfiguration,
+        IConfigurationSection? endpointConfigurationSection)
+    {
+        var diagnosticsSection = endpointConfigurationSection?.GetSection("Diagnostics");
+        if (!bool.TryParse(diagnosticsSection?["Enable"] ?? bool.TrueString,
+                out var enabled))
+        {
+            throw new ArgumentException("Diagnostics:Enable value cannot be parsed to a bool.");
+        }
+
+        if (!enabled)
+        {
+            endpointConfiguration.CustomDiagnosticsWriter(emptyDiagnosticWriter);
+        }
+
+        var customPath = diagnosticsSection?["Path"];
+        if (!string.IsNullOrWhiteSpace(customPath))
+        {
+            endpointConfiguration.SetDiagnosticsPath(customPath);   
         }
     }
 

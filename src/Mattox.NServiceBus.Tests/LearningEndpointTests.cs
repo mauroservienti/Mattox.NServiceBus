@@ -243,4 +243,80 @@ public class LearningEndpointTests
             EndpointConfiguration endpointConfiguration = endpoint;
         });
     }
+    
+    [Fact]
+    public void Setting_diagnostics_path_creates_endpoint_with_custom_path()
+    {
+        const string expectedPath = "./temp";
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Diagnostics:Path", expectedPath }
+            })
+            .Build();
+
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        var path = settings.GetOrDefault<string>("Diagnostics.RootPath");
+
+        Assert.Equal(expectedPath, path);
+    }
+    
+    [Fact]
+    public void Setting_diagnostics_empty_path_makes_no_changes()
+    {
+        const string expectedPath = "";
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Diagnostics:Path", expectedPath }
+            })
+            .Build();
+
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        var path = settings.GetOrDefault<string>("Diagnostics.RootPath");
+
+        Assert.Null(path);
+    }
+    
+    [Fact]
+    public void Disabling_diagnostics_creates_endpoint_with_no_diagnostics()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Diagnostics:Enable", bool.FalseString }
+            })
+            .Build();
+
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        var writer = settings.GetOrDefault<Func<string, CancellationToken, Task>>("HostDiagnosticsWriter");
+
+        Assert.Equal(LearningEndpoint.emptyDiagnosticWriter, writer);
+    }
+    
+    [Fact]
+    public void Setting_diagnostics_enable_to_non_parsable_value_throws()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Diagnostics:Enable", "cannot be parsed to a bool" }
+            })
+            .Build();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var endpoint = new LearningEndpoint("my-endpoint", config);
+            EndpointConfiguration endpointConfiguration = endpoint;
+        });
+    }
 }
