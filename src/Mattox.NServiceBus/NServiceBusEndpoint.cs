@@ -13,18 +13,11 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     internal static readonly Func<string, CancellationToken, Task> emptyDiagnosticWriter = (_, _) => Task.CompletedTask;
     const string NServiceBusEndpointConfigurationSectionName = "NServiceBus:EndpointConfiguration";
     readonly IConfiguration? _configuration;
-
-    // TODO: Why do inheritors need the EndpointConfiguration?
-    protected EndpointConfiguration EndpointConfiguration { get; }
-
-    // TODO: Why do inheritors need the EndpointConfigurationSection?
-    protected IConfigurationSection? EndpointConfigurationSection { get; }
-
-    Action<SerializationExtensions<SystemJsonSerializer>>? _serializerCustomization;
+    readonly EndpointConfiguration endpointConfiguration;
+    readonly IConfigurationSection? endpointConfigurationSection;
     bool _useDefaultSerializer = true;
-
-    // TODO: Why do inheritors need the Transport?
-    protected TTransport Transport { get; private set; } = null!;
+    Action<SerializationExtensions<SystemJsonSerializer>>? _serializerCustomization;
+    TTransport transport;
     Action<TTransport>? _transportCustomization;
     Func<IConfiguration?, TTransport>? _transportFactory;
     Action<EndpointConfiguration>? endpointConfigurationPreview;
@@ -39,8 +32,8 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         if (endpointName == null) throw new ArgumentNullException(nameof(endpointName));
 
         _configuration = configuration;
-        EndpointConfiguration = new EndpointConfiguration(endpointName);
-        EndpointConfigurationSection = configuration?.GetSection(NServiceBusEndpointConfigurationSectionName);
+        endpointConfiguration = new EndpointConfiguration(endpointName);
+        endpointConfigurationSection = configuration?.GetSection(NServiceBusEndpointConfigurationSectionName);
     }
 
     protected abstract TTransport CreateTransport(IConfigurationSection? transportConfigurationSection);
@@ -58,8 +51,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         }
     }
 
-    // TODO this should not need to be protected
-    protected static string GetEndpointNameFromConfigurationOrThrow(IConfiguration configuration)
+    static string GetEndpointNameFromConfigurationOrThrow(IConfiguration configuration)
     {
         if (configuration == null)
         {
@@ -74,16 +66,16 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
     protected virtual void FinalizeConfiguration()
     {
-        var transportConfigurationSection = EndpointConfigurationSection?.GetSection("Transport");
+        var transportConfigurationSection = endpointConfigurationSection?.GetSection("Transport");
 
         ConfigureTransport(transportConfigurationSection);
-        ConfigurePurgeOnStartup(EndpointConfiguration, transportConfigurationSection);
-        ConfigureAuditing(EndpointConfiguration, EndpointConfigurationSection);
-        ConfigureRecoverability(EndpointConfiguration, EndpointConfigurationSection);
-        ConfigureSendOnly(EndpointConfiguration, EndpointConfigurationSection);
-        ConfigureInstallers(EndpointConfiguration, EndpointConfigurationSection);
+        ConfigurePurgeOnStartup(endpointConfiguration, transportConfigurationSection);
+        ConfigureAuditing(endpointConfiguration, endpointConfigurationSection);
+        ConfigureRecoverability(endpointConfiguration, endpointConfigurationSection);
+        ConfigureSendOnly(endpointConfiguration, endpointConfigurationSection);
+        ConfigureInstallers(endpointConfiguration, endpointConfigurationSection);
         ConfigureSerializer();
-        ConfigureDiagnostics(EndpointConfiguration, EndpointConfigurationSection);
+        ConfigureDiagnostics(endpointConfiguration, endpointConfigurationSection);
 
         // TODO create and configure the persistence
         // TODO Outbox
@@ -112,7 +104,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO
         // EndpointConfiguration.UniquelyIdentifyRunningInstance();
 
-        endpointConfigurationPreview?.Invoke(EndpointConfiguration);
+        endpointConfigurationPreview?.Invoke(endpointConfiguration);
     }
 
     // TODO: All the Configure* are static, should this one too?
@@ -123,19 +115,19 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             return;
         }
 
-        var serializerConfiguration = EndpointConfiguration.UseSerialization<SystemJsonSerializer>();
+        var serializerConfiguration = endpointConfiguration.UseSerialization<SystemJsonSerializer>();
         _serializerCustomization?.Invoke(serializerConfiguration);
     }
 
     // TODO: All the Configure* are static, should this one too?
     void ConfigureTransport(IConfigurationSection? transportConfigurationSection)
     {
-        Transport = _transportFactory != null
+        transport = _transportFactory != null
             ? _transportFactory(_configuration)
             : CreateTransport(transportConfigurationSection);
 
-        _transportCustomization?.Invoke(Transport);
-        EndpointConfiguration.UseTransport(Transport);
+        _transportCustomization?.Invoke(transport);
+        endpointConfiguration.UseTransport(transport);
     }
 
     static void ConfigureAuditing(EndpointConfiguration endpointConfiguration,
@@ -186,7 +178,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
                     if (delayedSection["TimeIncrease"] is { } timeIncrease)
                     {
-                        ;
                         delayed.TimeIncrease(TimeSpan.Parse(timeIncrease));
                     }
                 });
@@ -271,26 +262,26 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     public static implicit operator EndpointConfiguration(NServiceBusEndpoint<TTransport> endpoint)
     {
         endpoint.FinalizeConfiguration();
-        return endpoint.EndpointConfiguration;
+        return endpoint.endpointConfiguration;
     }
 
     public PersistenceExtensions<T> UsePersistence<T>()
         where T : PersistenceDefinition
     {
-        return EndpointConfiguration.UsePersistence<T>();
+        return endpointConfiguration.UsePersistence<T>();
     }
 
     public PersistenceExtensions<T, S> UsePersistence<T, S>()
         where T : PersistenceDefinition
         where S : StorageType
     {
-        return EndpointConfiguration.UsePersistence<T, S>();
+        return endpointConfiguration.UsePersistence<T, S>();
     }
 
     public SerializationExtensions<T> ReplaceDefaultSerializer<T>() where T : SerializationDefinition, new()
     {
         _useDefaultSerializer = false;
-        return EndpointConfiguration.UseSerialization<T>();
+        return endpointConfiguration.UseSerialization<T>();
     }
 
     public void CustomizeDefaultSerializer(
@@ -309,16 +300,16 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         _transportFactory = transportFactory;
     }
 
-    public void PreviewConfiguration(Action<EndpointConfiguration> endpointConfiguration)
+    public void PreviewConfiguration(Action<EndpointConfiguration> configuration)
     {
-        endpointConfigurationPreview = endpointConfiguration;
+        endpointConfigurationPreview = configuration;
     }
 
     public async Task<IEndpointInstance> Start()
     {
         FinalizeConfiguration();
 
-        var endpointInstance = await Endpoint.Start(EndpointConfiguration).ConfigureAwait(false);
+        var endpointInstance = await Endpoint.Start(endpointConfiguration).ConfigureAwait(false);
         return endpointInstance;
     }
 }
