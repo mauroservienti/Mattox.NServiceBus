@@ -58,8 +58,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         }
     }
 
-    // TODO this should not need to be protected
-    protected static string GetEndpointNameFromConfigurationOrThrow(IConfiguration configuration)
+    static string GetEndpointNameFromConfigurationOrThrow(IConfiguration configuration)
     {
         if (configuration == null)
         {
