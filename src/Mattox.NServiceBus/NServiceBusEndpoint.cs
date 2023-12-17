@@ -309,9 +309,9 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         _transportFactory = transportFactory;
     }
 
-    public void PreviewConfiguration(Action<EndpointConfiguration> endpointConfiguration)
+    public void PreviewConfiguration(Action<EndpointConfiguration> configuration)
     {
-        endpointConfigurationPreview = endpointConfiguration;
+        endpointConfigurationPreview = configuration;
     }
 
     public async Task<IEndpointInstance> Start()
