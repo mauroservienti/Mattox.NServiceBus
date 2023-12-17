@@ -185,7 +185,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
                     if (delayedSection["TimeIncrease"] is { } timeIncrease)
                     {
-                        ;
                         delayed.TimeIncrease(TimeSpan.Parse(timeIncrease));
                     }
                 });
