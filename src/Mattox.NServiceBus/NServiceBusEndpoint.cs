@@ -156,7 +156,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         var recoverabilityConfiguration = endpointConfiguration.Recoverability();
 
-        if (recoverabilitySection?.GetSection("Immediate") is { } immediateSection)
+        if (recoverabilitySection?.GetSection("Immediate") is { Value: not null } immediateSection)
         {
             // TODO tests
             recoverabilityConfiguration.Immediate(
@@ -169,7 +169,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
                 });
         }
 
-        if (recoverabilitySection?.GetSection("Delayed") is { } delayedSection)
+        if (recoverabilitySection?.GetSection("Delayed") is { Value: not null } delayedSection)
         {
             // TODO tests
             recoverabilityConfiguration.Delayed(
@@ -193,17 +193,17 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO allow to register with a delegate a custom retry policy 
         // recoverabilityConfiguration.CustomPolicy()
 
-        if (recoverabilitySection?.GetSection("AutomaticRateLimiting") is { } automaticRateLimit)
+        if (recoverabilitySection?.GetSection("AutomaticRateLimiting") is { Value: not null } automaticRateLimiting)
         {
             // TODO: tests
             // TODO: docs
-            if (!int.TryParse(automaticRateLimit["ConsecutiveFailures"], out var consecutiveFailures))
+            if (!int.TryParse(automaticRateLimiting["ConsecutiveFailures"], out var consecutiveFailures))
             {
                 throw new ArgumentException(
                     "AutomaticRateLimit.ConsecutiveFailures is a required value and cannot be parsed to an integer");
             }
 
-            if (!TimeSpan.TryParse(automaticRateLimit["TimeToWaitBetweenThrottledAttempts"],
+            if (!TimeSpan.TryParse(automaticRateLimiting["TimeToWaitBetweenThrottledAttempts"],
                     out var timeToWaitBetweenThrottledAttempts))
             {
                 throw new ArgumentException(
