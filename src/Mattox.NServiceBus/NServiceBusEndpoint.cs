@@ -43,10 +43,11 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     {
         if (transportConfigurationSection?["TransportTransactionMode"] is { } transportTransactionMode)
         {
-            // TODO throw if cannot parse
-            // TODO test
-            Enum.TryParse(transportTransactionMode, ignoreCase: false,
-                out TransportTransactionMode transportTransportTransactionMode);
+            if (!Enum.TryParse(transportTransactionMode, ignoreCase: false,
+                    out TransportTransactionMode transportTransportTransactionMode))
+            {
+                throw new ArgumentException("Transport.TransportTransactionMode value cannot be parsed to a valid TransportTransactionMode.");
+            }
             transport.TransportTransactionMode = transportTransportTransactionMode;
         }
     }
