@@ -150,6 +150,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     {
         var recoverabilitySection = endpointConfigurationSection?.GetSection("Recoverability");
 
+        // TODO tests
         var errorQueue = recoverabilitySection?["ErrorQueue"] ?? "error";
         endpointConfiguration.SendFailedMessagesTo(errorQueue);
 
@@ -157,6 +158,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         if (recoverabilitySection?.GetSection("Immediate") is { } immediateSection)
         {
+            // TODO tests
             recoverabilityConfiguration.Immediate(
                 immediate =>
                 {
@@ -169,6 +171,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         if (recoverabilitySection?.GetSection("Delayed") is { } delayedSection)
         {
+            // TODO tests
             recoverabilityConfiguration.Delayed(
                 delayed =>
                 {
