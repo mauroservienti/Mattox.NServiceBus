@@ -190,16 +190,18 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO allow to register with a delegate a custom retry policy 
         // recoverabilityConfiguration.CustomPolicy()
 
-        if (recoverabilitySection?.GetSection("AutomaticRateLimit") is { } automaticRateLimit)
+        if (recoverabilitySection?.GetSection("AutomaticRateLimiting") is { } automaticRateLimit)
         {
             // TODO: tests
+            // TODO: docs
             if (!int.TryParse(automaticRateLimit["ConsecutiveFailures"], out var consecutiveFailures))
             {
                 throw new ArgumentException(
                     "AutomaticRateLimit.ConsecutiveFailures is a required value and cannot be parsed to an integer");
             }
 
-            if (!TimeSpan.TryParse(automaticRateLimit["TimeToWaitBetweenThrottledAttempts"], out var timeToWaitBetweenThrottledAttempts))
+            if (!TimeSpan.TryParse(automaticRateLimit["TimeToWaitBetweenThrottledAttempts"],
+                    out var timeToWaitBetweenThrottledAttempts))
             {
                 throw new ArgumentException(
                     "AutomaticRateLimit.TimeToWaitBetweenThrottledAttempts is a required value and cannot be parsed to a TimeSpan");
