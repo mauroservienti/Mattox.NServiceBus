@@ -319,4 +319,38 @@ public class LearningEndpointTests
             EndpointConfiguration endpointConfiguration = endpoint;
         });
     }
+    
+    [Fact]
+    public void Setting_transport_transaction_mode_to_non_parsable_value_throws()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Transport:TransportTransactionMode", "cannot be parsed" }
+            })
+            .Build();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var endpoint = new LearningEndpoint("my-endpoint", config);
+            EndpointConfiguration endpointConfiguration = endpoint;
+        });
+    }
+    
+    [Fact]
+    public void Setting_transport_transaction_mode_sets_desired_value()
+    {
+        var expected = TransportTransactionMode.ReceiveOnly;
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Transport:TransportTransactionMode", expected.ToString() }
+            })
+            .Build();
+
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        var transportDefinition = endpoint.GetTransportDefinition();
+
+        Assert.Equal(expected, transportDefinition.TransportTransactionMode);
+    }
 }
