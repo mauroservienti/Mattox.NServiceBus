@@ -21,6 +21,8 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     Action<TTransport>? _transportCustomization;
     Func<IConfiguration?, TTransport>? _transportFactory;
     Action<EndpointConfiguration>? endpointConfigurationPreview;
+    Func<CancellationToken,Task>? customOnRateLimitStartedCallback;
+    Func<CancellationToken,Task>? customOnRateLimitEndedCallback;
 
     protected NServiceBusEndpoint(IConfiguration configuration)
         : this(GetEndpointNameFromConfigurationOrThrow(configuration), configuration)
@@ -72,7 +74,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         ConfigureTransport(transportConfigurationSection);
         ConfigurePurgeOnStartup(endpointConfiguration, transportConfigurationSection);
         ConfigureAuditing(endpointConfiguration, endpointConfigurationSection);
-        ConfigureRecoverability(endpointConfiguration, endpointConfigurationSection);
+        ConfigureRecoverability();
         ConfigureSendOnly(endpointConfiguration, endpointConfigurationSection);
         ConfigureInstallers(endpointConfiguration, endpointConfigurationSection);
         ConfigureSerializer();
@@ -108,7 +110,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         endpointConfigurationPreview?.Invoke(endpointConfiguration);
     }
 
-    // TODO: All the Configure* are static, should this one too?
     void ConfigureSerializer()
     {
         if (!_useDefaultSerializer)
@@ -145,8 +146,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         endpointConfiguration.AuditProcessedMessagesTo(auditQueue);
     }
 
-    static void ConfigureRecoverability(EndpointConfiguration endpointConfiguration,
-        IConfigurationSection? endpointConfigurationSection)
+    void ConfigureRecoverability()
     {
         var recoverabilitySection = endpointConfigurationSection?.GetSection("Recoverability");
 
@@ -190,8 +190,37 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO allow to register with a delegate a custom retry policy 
         // recoverabilityConfiguration.CustomPolicy()
 
-        // TODO Automatic rate limiting
-        // https://docs.particular.net/nservicebus/recoverability/#automatic-rate-limiting
+        if (recoverabilitySection?.GetSection("AutomaticRateLimit") is { } automaticRateLimit)
+        {
+            // TODO: tests
+            if (!int.TryParse(automaticRateLimit["ConsecutiveFailures"], out var consecutiveFailures))
+            {
+                throw new ArgumentException(
+                    "AutomaticRateLimit.ConsecutiveFailures is a required value and cannot be parsed to an integer");
+            }
+
+            if (!TimeSpan.TryParse(automaticRateLimit["TimeToWaitBetweenThrottledAttempts"], out var timeToWaitBetweenThrottledAttempts))
+            {
+                throw new ArgumentException(
+                    "AutomaticRateLimit.TimeToWaitBetweenThrottledAttempts is a required value and cannot be parsed to a TimeSpan");
+            }
+
+            recoverabilityConfiguration.OnConsecutiveFailures(consecutiveFailures,
+                new RateLimitSettings(
+                    timeToWaitBetweenThrottledAttempts: timeToWaitBetweenThrottledAttempts,
+                    onRateLimitStarted: customOnRateLimitStartedCallback,
+                    onRateLimitEnded: customOnRateLimitEndedCallback));
+        }
+    }
+
+    public void ConfigureRateLimitStartedCallback(Func<CancellationToken, Task> onRateLimitStarted)
+    {
+        customOnRateLimitStartedCallback = onRateLimitStarted;
+    }
+
+    public void ConfigureRateLimitEndedCallback(Func<CancellationToken, Task> onRateLimitEnded)
+    {
+        customOnRateLimitEndedCallback = onRateLimitEnded;
     }
 
     static void ConfigureInstallers(EndpointConfiguration endpointConfiguration,
