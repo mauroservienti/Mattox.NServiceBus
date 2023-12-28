@@ -69,7 +69,14 @@ The `AutomaticRateLimiting` section allows configuring the endpoint [automatic r
 
 It's also possible to define code callbacks that will be triggered when rate limiting starts and ends:
 
-snippet: AutoRateLimitingCallbacks
+<!-- snippet: AutoRateLimitingCallbacks -->
+<a id='snippet-autoratelimitingcallbacks'></a>
+```cs
+endpoint.ConfigureRateLimitStartedCallback(token => Task.CompletedTask);
+endpoint.ConfigureRateLimitEndedCallback(token => Task.CompletedTask);
+```
+<sup><a href='/src/Snippets/AutoRateLimitingSnippets.cs#L9-L12' title='Snippet source file'>snippet source</a> | <a href='#snippet-autoratelimitingcallbacks' title='Start of snippet'>anchor</a></sup>
+<!-- endSnippet -->
 
 ## Transport
 
