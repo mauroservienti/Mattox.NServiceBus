@@ -58,6 +58,19 @@ The `Delayed` sub-section allows controlling [delayed retry settings](https://do
 - `NumberOfRetries` defines the number of times a failing message is retried in a delayed fashion.
 - `TimeIncrease` (format: `TimeStamp`) defines how much delay is used between delayed retries
 
+### Automatic Rate Limiting
+
+Section full name: `NServiceBus:EndpointConfiguration:Recoverability:AutomaticRateLimiting`
+
+The `AutomaticRateLimiting` section allows configuring the endpoint [automatic rate limiting](https://docs.particular.net/nservicebus/recoverability/#automatic-rate-limiting) feature.
+
+- `ConsecutiveFailures` defines the number of failure that trigger the rate limiting feature
+- `TimeToWaitBetweenThrottledAttempts` (optional, format: `TimeSpan`, defaults to 1 second) defines the time to wait between throttled attempts.
+
+It's also possible to define code callbacks that will be triggered when rate limiting starts and ends:
+
+snippet: AutoRateLimitingCallbacks
+
 ## Transport
 
 Section full name: `NServiceBus:EndpointConfiguration:Transport`

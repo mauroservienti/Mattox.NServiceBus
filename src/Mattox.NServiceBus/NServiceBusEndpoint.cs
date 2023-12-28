@@ -196,7 +196,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         if (recoverabilitySection?.GetSection("AutomaticRateLimiting") is { Value: not null } automaticRateLimiting)
         {
             // TODO: tests
-            // TODO: docs
             if (!int.TryParse(automaticRateLimiting["ConsecutiveFailures"], out var consecutiveFailures))
             {
                 throw new ArgumentException(
