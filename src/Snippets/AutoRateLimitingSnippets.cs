@@ -6,9 +6,9 @@ public class AutoRateLimitingSnippets
 {
     public void Callbacks(LearningEndpoint endpoint)
     {
-#region AutoRateLimitingCallbacks
+        // begin-snippet:  AutoRateLimitingCallbacks
         endpoint.ConfigureRateLimitStartedCallback(token => Task.CompletedTask);
         endpoint.ConfigureRateLimitEndedCallback(token => Task.CompletedTask);
-#endregion
+        // end-snippet
     }
 }
