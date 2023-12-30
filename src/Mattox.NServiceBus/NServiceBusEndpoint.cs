@@ -166,18 +166,29 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         if (recoverabilitySection?.GetSection("Delayed") is { } delayedSection)
         {
-            // TODO tests
             recoverabilityConfiguration.Delayed(
                 delayed =>
                 {
-                    if (delayedSection["NumberOfRetries"] is { } numberOfRetries)
+                    if (delayedSection["NumberOfRetries"] is { } numberOfRetriesValue)
                     {
-                        delayed.NumberOfRetries(int.Parse(numberOfRetries));
+                        if (!int.TryParse(numberOfRetriesValue, out var numberOfRetries))
+                        {
+                            throw new ArgumentException(
+                                "Recoverability.Delayed.NumberOfRetries cannot be parsed to an integer");
+                        }
+                        
+                        delayed.NumberOfRetries(numberOfRetries);
                     }
 
-                    if (delayedSection["TimeIncrease"] is { } timeIncrease)
+                    if (delayedSection["TimeIncrease"] is { } timeIncreaseValue)
                     {
-                        delayed.TimeIncrease(TimeSpan.Parse(timeIncrease));
+                        if (!TimeSpan.TryParse(timeIncreaseValue, out var timeIncrease))
+                        {
+                            throw new ArgumentException(
+                                "Recoverability.Delayed.TimeIncrease cannot be parsed to a TimeSpan");
+                        }
+                        
+                        delayed.TimeIncrease(timeIncrease);
                     }
                 });
         }
