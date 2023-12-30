@@ -133,7 +133,7 @@ public class RecoverabilitySettingsTests
     }
     
     [Fact]
-    public void Setting_dealyed_TimeIncrease_to_invalid_value_throws()
+    public void Setting_delayed_TimeIncrease_to_invalid_value_throws()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string>()
