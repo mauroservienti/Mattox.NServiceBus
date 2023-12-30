@@ -21,8 +21,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     Action<TTransport>? _transportCustomization;
     Func<IConfiguration?, TTransport>? _transportFactory;
     Action<EndpointConfiguration>? endpointConfigurationPreview;
-    Func<CancellationToken,Task>? customOnRateLimitStartedCallback;
-    Func<CancellationToken,Task>? customOnRateLimitEndedCallback;
+    public EndpointRecoverability EndpointRecoverability { get; } = new();
 
     protected NServiceBusEndpoint(IConfiguration configuration)
         : this(GetEndpointNameFromConfigurationOrThrow(configuration), configuration)
@@ -212,19 +211,9 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             recoverabilityConfiguration.OnConsecutiveFailures(consecutiveFailures,
                 new RateLimitSettings(
                     timeToWaitBetweenThrottledAttempts: timeToWaitBetweenThrottledAttempts,
-                    onRateLimitStarted: customOnRateLimitStartedCallback,
-                    onRateLimitEnded: customOnRateLimitEndedCallback));
+                    onRateLimitStarted: EndpointRecoverability.OnRateLimitStartedCallback,
+                    onRateLimitEnded: EndpointRecoverability.OnRateLimitEndedCallback));
         }
-    }
-
-    public void ConfigureRateLimitStartedCallback(Func<CancellationToken, Task> onRateLimitStarted)
-    {
-        customOnRateLimitStartedCallback = onRateLimitStarted;
-    }
-
-    public void ConfigureRateLimitEndedCallback(Func<CancellationToken, Task> onRateLimitEnded)
-    {
-        customOnRateLimitEndedCallback = onRateLimitEnded;
     }
 
     static void ConfigureInstallers(EndpointConfiguration endpointConfiguration,
