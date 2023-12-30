@@ -164,7 +164,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             recoverabilityConfiguration.Immediate(immediate => immediate.NumberOfRetries(immediateNumberOfRetries));
         }
 
-        if (recoverabilitySection?.GetSection("Delayed") is { Value: not null } delayedSection)
+        if (recoverabilitySection?.GetSection("Delayed") is { } delayedSection)
         {
             // TODO tests
             recoverabilityConfiguration.Delayed(

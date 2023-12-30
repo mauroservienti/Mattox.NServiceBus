@@ -76,4 +76,76 @@ public class RecoverabilitySettingsTests
         
         Assert.Equal(expected, settings.GetOrDefault<int>("Recoverability.Immediate.Retries"));
     }
+    
+    [Fact]
+    public void Setting_delayed_NumberOfRetries_changes_the_default_value()
+    {
+        const int expected = 14;
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Recoverability:Delayed:NumberOfRetries", expected.ToString() }
+            })
+            .Build();
+        
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        
+        Assert.Equal(expected, settings.GetOrDefault<int>("Recoverability.Delayed.DefaultPolicy.Retries"));
+    }
+    
+    [Fact]
+    public void Setting_dealyed_NumberOfRetries_to_invalid_value_throws()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Recoverability:Delayed:NumberOfRetries", "cannot be parsed" }
+            })
+            .Build();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var endpoint = new LearningEndpoint("my-endpoint", config);
+            EndpointConfiguration endpointConfiguration = endpoint;
+        });
+    }
+    
+    [Fact]
+    public void Setting_delayed_TimeIncrease_changes_the_default_value()
+    {
+        var expected = TimeSpan.FromSeconds(14);
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Recoverability:Delayed:TimeIncrease", expected.ToString() }
+            })
+            .Build();
+        
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        
+        Assert.Equal(expected, settings.GetOrDefault<TimeSpan>("Recoverability.Delayed.DefaultPolicy.Timespan"));
+    }
+    
+    [Fact]
+    public void Setting_dealyed_TimeIncrease_to_invalid_value_throws()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Recoverability:Delayed:TimeIncrease", "cannot be parsed" }
+            })
+            .Build();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var endpoint = new LearningEndpoint("my-endpoint", config);
+            EndpointConfiguration endpointConfiguration = endpoint;
+        });
+    }
 }
