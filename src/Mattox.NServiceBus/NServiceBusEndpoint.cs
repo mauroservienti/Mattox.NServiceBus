@@ -148,24 +148,20 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     void ConfigureRecoverability()
     {
         var recoverabilitySection = endpointConfigurationSection?.GetSection("Recoverability");
-
-        // TODO tests
         var errorQueue = recoverabilitySection?["ErrorQueue"] ?? "error";
         endpointConfiguration.SendFailedMessagesTo(errorQueue);
 
         var recoverabilityConfiguration = endpointConfiguration.Recoverability();
 
-        if (recoverabilitySection?.GetSection("Immediate") is { Value: not null } immediateSection)
+        if (recoverabilitySection?.GetSection("Immediate") is { } immediateSection 
+            && immediateSection["NumberOfRetries"] is { } immediateNumberOfRetriesValue)
         {
-            // TODO tests
-            recoverabilityConfiguration.Immediate(
-                immediate =>
-                {
-                    if (immediateSection["NumberOfRetries"] is { } numberOfRetries)
-                    {
-                        immediate.NumberOfRetries(int.Parse(numberOfRetries));
-                    }
-                });
+            if (!int.TryParse(immediateNumberOfRetriesValue, out var immediateNumberOfRetries))
+            {
+                throw new ArgumentException(
+                    "Recoverability.Immediate.NumberOfRetries is cannot be parsed to an integer");
+            }
+            recoverabilityConfiguration.Immediate(immediate => immediate.NumberOfRetries(immediateNumberOfRetries));
         }
 
         if (recoverabilitySection?.GetSection("Delayed") is { Value: not null } delayedSection)
@@ -192,27 +188,30 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO allow to register with a delegate a custom retry policy 
         // recoverabilityConfiguration.CustomPolicy()
 
-        if (recoverabilitySection?.GetSection("AutomaticRateLimiting") is { Value: not null } automaticRateLimiting)
+        if (recoverabilitySection?.GetSection("AutomaticRateLimiting") is { } automaticRateLimiting)
         {
-            // TODO: tests
-            if (!int.TryParse(automaticRateLimiting["ConsecutiveFailures"], out var consecutiveFailures))
+            if (automaticRateLimiting["ConsecutiveFailures"] is { } consecutiveFailuresValue)
             {
-                throw new ArgumentException(
-                    "AutomaticRateLimit.ConsecutiveFailures is a required value and cannot be parsed to an integer");
-            }
+                // TODO: tests
+                if (!int.TryParse(consecutiveFailuresValue, out var consecutiveFailures))
+                {
+                    throw new ArgumentException(
+                        "AutomaticRateLimit.ConsecutiveFailures is a required value and cannot be parsed to an integer");
+                }
 
-            if (!TimeSpan.TryParse(automaticRateLimiting["TimeToWaitBetweenThrottledAttempts"],
-                    out var timeToWaitBetweenThrottledAttempts))
-            {
-                throw new ArgumentException(
-                    "AutomaticRateLimit.TimeToWaitBetweenThrottledAttempts is a required value and cannot be parsed to a TimeSpan");
-            }
+                if (!TimeSpan.TryParse(automaticRateLimiting["TimeToWaitBetweenThrottledAttempts"],
+                        out var timeToWaitBetweenThrottledAttempts))
+                {
+                    throw new ArgumentException(
+                        "AutomaticRateLimit.TimeToWaitBetweenThrottledAttempts is a required value and cannot be parsed to a TimeSpan");
+                }
 
-            recoverabilityConfiguration.OnConsecutiveFailures(consecutiveFailures,
-                new RateLimitSettings(
-                    timeToWaitBetweenThrottledAttempts: timeToWaitBetweenThrottledAttempts,
-                    onRateLimitStarted: EndpointRecoverability.OnRateLimitStartedCallback,
-                    onRateLimitEnded: EndpointRecoverability.OnRateLimitEndedCallback));
+                recoverabilityConfiguration.OnConsecutiveFailures(consecutiveFailures,
+                    new RateLimitSettings(
+                        timeToWaitBetweenThrottledAttempts: timeToWaitBetweenThrottledAttempts,
+                        onRateLimitStarted: EndpointRecoverability.OnRateLimitStartedCallback,
+                        onRateLimitEnded: EndpointRecoverability.OnRateLimitEndedCallback));
+            }
         }
     }
 
