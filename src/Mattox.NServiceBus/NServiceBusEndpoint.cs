@@ -21,7 +21,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     Action<TTransport>? _transportCustomization;
     Func<IConfiguration?, TTransport>? _transportFactory;
     Action<EndpointConfiguration>? endpointConfigurationPreview;
-    public EndpointRecoverability EndpointRecoverability { get; } = new();
+    public EndpointRecoverability Recoverability { get; } = new();
 
     protected NServiceBusEndpoint(IConfiguration configuration)
         : this(GetEndpointNameFromConfigurationOrThrow(configuration), configuration)
@@ -203,7 +203,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         {
             if (automaticRateLimiting["ConsecutiveFailures"] is { } consecutiveFailuresValue)
             {
-                // TODO: tests
                 if (!int.TryParse(consecutiveFailuresValue, out var consecutiveFailures))
                 {
                     throw new ArgumentException(
@@ -220,8 +219,8 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
                 recoverabilityConfiguration.OnConsecutiveFailures(consecutiveFailures,
                     new RateLimitSettings(
                         timeToWaitBetweenThrottledAttempts: timeToWaitBetweenThrottledAttempts,
-                        onRateLimitStarted: EndpointRecoverability.OnRateLimitStartedCallback,
-                        onRateLimitEnded: EndpointRecoverability.OnRateLimitEndedCallback));
+                        onRateLimitStarted: Recoverability.OnRateLimitStartedCallback,
+                        onRateLimitEnded: Recoverability.OnRateLimitEndedCallback));
             }
         }
     }

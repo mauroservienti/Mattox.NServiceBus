@@ -42,6 +42,65 @@ public class RecoverabilitySettingsTests
     }
     
     [Fact]
+    public void Setting_rate_limiting_TimeToWaitBetweenThrottledAttempts_to_invalid_value_throws()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Recoverability:AutomaticRateLimiting:ConsecutiveFailures", "10" },
+                { "NServiceBus:EndpointConfiguration:Recoverability:AutomaticRateLimiting:TimeToWaitBetweenThrottledAttempts", "cannot be parsed" }
+            })
+            .Build();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var endpoint = new LearningEndpoint("my-endpoint", config);
+            EndpointConfiguration endpointConfiguration = endpoint;
+        });
+    }
+    
+    [Fact]
+    public void Setting_rate_limiting_changes_the_default_values()
+    {
+        const int expectedConsecutiveFailures = 14;
+        var expectedTimeToWaitBetweenThrottledAttempts = TimeSpan.FromMinutes(10);
+        Func<CancellationToken, Task> expectedOnRateLimitStarted = _ => Task.CompletedTask;
+        Func<CancellationToken, Task> expectedOnRateLimitEnded = _ => Task.CompletedTask;
+        
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Recoverability:AutomaticRateLimiting:ConsecutiveFailures", expectedConsecutiveFailures.ToString() },
+                { "NServiceBus:EndpointConfiguration:Recoverability:AutomaticRateLimiting:TimeToWaitBetweenThrottledAttempts", expectedTimeToWaitBetweenThrottledAttempts.ToString() }
+            })
+            .Build();
+        
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        endpoint.Recoverability.OnRateLimitStarted(expectedOnRateLimitStarted);
+        endpoint.Recoverability.OnRateLimitEnded(expectedOnRateLimitEnded);
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        var consecutiveFailureConfiguration =
+            settings.GetOrDefault<object>("NServiceBus.ConsecutiveFailuresConfiguration");
+
+        var numberOfConsecutiveFailuresBeforeArming = (int)consecutiveFailureConfiguration!
+            .GetType()
+            .GetProperty("NumberOfConsecutiveFailuresBeforeArming")!
+            .GetValue(consecutiveFailureConfiguration)!;
+
+        var rateLimitSettings = (RateLimitSettings)consecutiveFailureConfiguration!
+            .GetType()
+            .GetProperty("RateLimitSettings")!
+            .GetValue(consecutiveFailureConfiguration)!;
+
+        Assert.Equal(expectedConsecutiveFailures, numberOfConsecutiveFailuresBeforeArming);
+        Assert.Equal(expectedTimeToWaitBetweenThrottledAttempts, rateLimitSettings.TimeToWaitBetweenThrottledAttempts);
+        Assert.Equal(expectedOnRateLimitStarted, rateLimitSettings.OnRateLimitStarted);
+        Assert.Equal(expectedOnRateLimitEnded, rateLimitSettings.OnRateLimitEnded);
+    }
+    
+    [Fact]
     public void Setting_immediate_NumberOfRetries_to_invalid_value_throws()
     {
         var config = new ConfigurationBuilder()

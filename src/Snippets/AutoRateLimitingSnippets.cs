@@ -7,8 +7,8 @@ public class AutoRateLimitingSnippets
     public void Callbacks(LearningEndpoint endpoint)
     {
         // begin-snippet:  AutoRateLimitingCallbacks
-        endpoint.EndpointRecoverability.OnRateLimitStarted(token => Task.CompletedTask);
-        endpoint.EndpointRecoverability.OnRateLimitEnded(token => Task.CompletedTask);
+        endpoint.Recoverability.OnRateLimitStarted(token => Task.CompletedTask);
+        endpoint.Recoverability.OnRateLimitEnded(token => Task.CompletedTask);
         // end-snippet
     }
 }
