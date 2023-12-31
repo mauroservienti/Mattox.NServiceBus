@@ -207,4 +207,18 @@ public class RecoverabilitySettingsTests
             EndpointConfiguration endpointConfiguration = endpoint;
         });
     }
+    
+    [Fact]
+    public void Setting_failed_policy_changes_the_default_value()
+    {
+        Action<Dictionary<string, string>> expected = _ => { };
+        
+        var endpoint = new LearningEndpoint("my-endpoint");
+        endpoint.Recoverability.OnFailedMessage(failedSettings => failedSettings.HeaderCustomization(expected));
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        
+        Assert.Equal(expected, settings.GetOrDefault<Action<Dictionary<string, string>>>("Recoverability.Failed.FaultHeaderCustomization"));
+    }
 }

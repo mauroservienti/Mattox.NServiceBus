@@ -193,8 +193,10 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
                 });
         }
 
-        // TODO allow to customize with a delegate the Failed policy
-        // recoverabilityConfiguration.Failed()
+        if (Recoverability.OnFailedMessageCallback != null)
+        {
+            recoverabilityConfiguration.Failed(Recoverability.OnFailedMessageCallback);
+        }
 
         // TODO allow to register with a delegate a custom retry policy 
         // recoverabilityConfiguration.CustomPolicy()
