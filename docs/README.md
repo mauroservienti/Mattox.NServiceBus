@@ -72,8 +72,8 @@ It's also possible to define code callbacks that will be triggered when rate lim
 <!-- snippet: AutoRateLimitingCallbacks -->
 <a id='snippet-autoratelimitingcallbacks'></a>
 ```cs
-endpoint.EndpointRecoverability.OnRateLimitStarted(token => Task.CompletedTask);
-endpoint.EndpointRecoverability.OnRateLimitEnded(token => Task.CompletedTask);
+endpoint.Recoverability.OnRateLimitStarted(token => Task.CompletedTask);
+endpoint.Recoverability.OnRateLimitEnded(token => Task.CompletedTask);
 ```
 <sup><a href='/src/Snippets/AutoRateLimitingSnippets.cs#L9-L12' title='Snippet source file'>snippet source</a> | <a href='#snippet-autoratelimitingcallbacks' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
