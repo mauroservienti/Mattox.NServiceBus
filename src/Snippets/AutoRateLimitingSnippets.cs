@@ -2,13 +2,26 @@
 
 namespace Snippets;
 
-public class AutoRateLimitingSnippets
+public class RecoverabilitySnippets
 {
-    public void Callbacks(LearningEndpoint endpoint)
+    public void AutoRateLimiting(LearningEndpoint endpoint)
     {
         // begin-snippet:  AutoRateLimitingCallbacks
         endpoint.Recoverability.OnRateLimitStarted(token => Task.CompletedTask);
         endpoint.Recoverability.OnRateLimitEnded(token => Task.CompletedTask);
+        // end-snippet
+    }
+    
+    public void Failed(LearningEndpoint endpoint)
+    {
+        // begin-snippet:  FailedMessageCustomization
+        endpoint.Recoverability.OnFailedMessage(settings =>
+        {
+            settings.HeaderCustomization(headers =>
+            {
+                // Customize failed message headers
+            });
+        });
         // end-snippet
     }
 }

@@ -78,6 +78,22 @@ endpoint.Recoverability.OnRateLimitEnded(token => Task.CompletedTask);
 <sup><a href='/src/Snippets/AutoRateLimitingSnippets.cs#L9-L12' title='Snippet source file'>snippet source</a> | <a href='#snippet-autoratelimitingcallbacks' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
+To intercept and customize failed messages before they are sent to the configured error queue, use the following code:
+
+<!-- snippet: FailedMessageCustomization -->
+<a id='snippet-failedmessagecustomization'></a>
+```cs
+endpoint.Recoverability.OnFailedMessage(settings =>
+{
+    settings.HeaderCustomization(headers =>
+    {
+        // Customize failed message headers
+    });
+});
+```
+<sup><a href='/src/Snippets/AutoRateLimitingSnippets.cs#L17-L25' title='Snippet source file'>snippet source</a> | <a href='#snippet-failedmessagecustomization' title='Start of snippet'>anchor</a></sup>
+<!-- endSnippet -->
+
 ## Transport
 
 Section full name: `NServiceBus:EndpointConfiguration:Transport`
