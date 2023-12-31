@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mattox.NServiceBus", "Matto
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mattox.NServiceBus.Tests", "Mattox.NServiceBus.Tests\Mattox.NServiceBus.Tests.csproj", "{4A3D3957-A397-48E5-88A5-800DC7CE1705}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snippets", "Snippets\Snippets.csproj", "{AF3EA2C4-1605-4FD7-AA62-282AF0F25684}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{4A3D3957-A397-48E5-88A5-800DC7CE1705}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A3D3957-A397-48E5-88A5-800DC7CE1705}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A3D3957-A397-48E5-88A5-800DC7CE1705}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF3EA2C4-1605-4FD7-AA62-282AF0F25684}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF3EA2C4-1605-4FD7-AA62-282AF0F25684}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF3EA2C4-1605-4FD7-AA62-282AF0F25684}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF3EA2C4-1605-4FD7-AA62-282AF0F25684}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

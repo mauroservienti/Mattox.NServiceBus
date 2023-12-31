@@ -21,6 +21,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     Action<TTransport>? _transportCustomization;
     Func<IConfiguration?, TTransport>? _transportFactory;
     Action<EndpointConfiguration>? endpointConfigurationPreview;
+    public EndpointRecoverability Recoverability { get; } = new();
 
     protected NServiceBusEndpoint(IConfiguration configuration)
         : this(GetEndpointNameFromConfigurationOrThrow(configuration), configuration)
@@ -72,7 +73,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         ConfigureTransport(transportConfigurationSection);
         ConfigurePurgeOnStartup(endpointConfiguration, transportConfigurationSection);
         ConfigureAuditing(endpointConfiguration, endpointConfigurationSection);
-        ConfigureRecoverability(endpointConfiguration, endpointConfigurationSection);
+        ConfigureRecoverability();
         ConfigureSendOnly(endpointConfiguration, endpointConfigurationSection);
         ConfigureInstallers(endpointConfiguration, endpointConfigurationSection);
         ConfigureSerializer();
@@ -108,7 +109,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         endpointConfigurationPreview?.Invoke(endpointConfiguration);
     }
 
-    // TODO: All the Configure* are static, should this one too?
     void ConfigureSerializer()
     {
         if (!_useDefaultSerializer)
@@ -145,26 +145,23 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         endpointConfiguration.AuditProcessedMessagesTo(auditQueue);
     }
 
-    static void ConfigureRecoverability(EndpointConfiguration endpointConfiguration,
-        IConfigurationSection? endpointConfigurationSection)
+    void ConfigureRecoverability()
     {
         var recoverabilitySection = endpointConfigurationSection?.GetSection("Recoverability");
-
         var errorQueue = recoverabilitySection?["ErrorQueue"] ?? "error";
         endpointConfiguration.SendFailedMessagesTo(errorQueue);
 
         var recoverabilityConfiguration = endpointConfiguration.Recoverability();
 
-        if (recoverabilitySection?.GetSection("Immediate") is { } immediateSection)
+        if (recoverabilitySection?.GetSection("Immediate") is { } immediateSection 
+            && immediateSection["NumberOfRetries"] is { } immediateNumberOfRetriesValue)
         {
-            recoverabilityConfiguration.Immediate(
-                immediate =>
-                {
-                    if (immediateSection["NumberOfRetries"] is { } numberOfRetries)
-                    {
-                        immediate.NumberOfRetries(int.Parse(numberOfRetries));
-                    }
-                });
+            if (!int.TryParse(immediateNumberOfRetriesValue, out var immediateNumberOfRetries))
+            {
+                throw new ArgumentException(
+                    "Recoverability.Immediate.NumberOfRetries is cannot be parsed to an integer");
+            }
+            recoverabilityConfiguration.Immediate(immediate => immediate.NumberOfRetries(immediateNumberOfRetries));
         }
 
         if (recoverabilitySection?.GetSection("Delayed") is { } delayedSection)
@@ -172,14 +169,26 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             recoverabilityConfiguration.Delayed(
                 delayed =>
                 {
-                    if (delayedSection["NumberOfRetries"] is { } numberOfRetries)
+                    if (delayedSection["NumberOfRetries"] is { } numberOfRetriesValue)
                     {
-                        delayed.NumberOfRetries(int.Parse(numberOfRetries));
+                        if (!int.TryParse(numberOfRetriesValue, out var numberOfRetries))
+                        {
+                            throw new ArgumentException(
+                                "Recoverability.Delayed.NumberOfRetries cannot be parsed to an integer");
+                        }
+                        
+                        delayed.NumberOfRetries(numberOfRetries);
                     }
 
-                    if (delayedSection["TimeIncrease"] is { } timeIncrease)
+                    if (delayedSection["TimeIncrease"] is { } timeIncreaseValue)
                     {
-                        delayed.TimeIncrease(TimeSpan.Parse(timeIncrease));
+                        if (!TimeSpan.TryParse(timeIncreaseValue, out var timeIncrease))
+                        {
+                            throw new ArgumentException(
+                                "Recoverability.Delayed.TimeIncrease cannot be parsed to a TimeSpan");
+                        }
+                        
+                        delayed.TimeIncrease(timeIncrease);
                     }
                 });
         }
@@ -190,8 +199,30 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO allow to register with a delegate a custom retry policy 
         // recoverabilityConfiguration.CustomPolicy()
 
-        // TODO Automatic rate limiting
-        // https://docs.particular.net/nservicebus/recoverability/#automatic-rate-limiting
+        if (recoverabilitySection?.GetSection("AutomaticRateLimiting") is { } automaticRateLimiting)
+        {
+            if (automaticRateLimiting["ConsecutiveFailures"] is { } consecutiveFailuresValue)
+            {
+                if (!int.TryParse(consecutiveFailuresValue, out var consecutiveFailures))
+                {
+                    throw new ArgumentException(
+                        "AutomaticRateLimit.ConsecutiveFailures is a required value and cannot be parsed to an integer");
+                }
+
+                if (!TimeSpan.TryParse(automaticRateLimiting["TimeToWaitBetweenThrottledAttempts"],
+                        out var timeToWaitBetweenThrottledAttempts))
+                {
+                    throw new ArgumentException(
+                        "AutomaticRateLimit.TimeToWaitBetweenThrottledAttempts is a required value and cannot be parsed to a TimeSpan");
+                }
+
+                recoverabilityConfiguration.OnConsecutiveFailures(consecutiveFailures,
+                    new RateLimitSettings(
+                        timeToWaitBetweenThrottledAttempts: timeToWaitBetweenThrottledAttempts,
+                        onRateLimitStarted: Recoverability.OnRateLimitStartedCallback,
+                        onRateLimitEnded: Recoverability.OnRateLimitEndedCallback));
+            }
+        }
     }
 
     static void ConfigureInstallers(EndpointConfiguration endpointConfiguration,
