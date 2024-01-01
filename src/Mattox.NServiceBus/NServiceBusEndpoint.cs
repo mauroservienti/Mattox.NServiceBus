@@ -200,7 +200,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         if (Recoverability.CustomRecoverabilityPolicy != null)
         {
-            // TODO tests
             // TODO docs
             recoverabilityConfiguration.CustomPolicy(Recoverability.CustomRecoverabilityPolicy);
         }
