@@ -75,7 +75,7 @@ It's also possible to define code callbacks that will be triggered when rate lim
 endpoint.Recoverability.OnRateLimitStarted(token => Task.CompletedTask);
 endpoint.Recoverability.OnRateLimitEnded(token => Task.CompletedTask);
 ```
-<sup><a href='/src/Snippets/AutoRateLimitingSnippets.cs#L9-L12' title='Snippet source file'>snippet source</a> | <a href='#snippet-autoratelimitingcallbacks' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/Snippets/RecoverabilitySnippets.cs#L10-L13' title='Snippet source file'>snippet source</a> | <a href='#snippet-autoratelimitingcallbacks' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 To intercept and customize failed messages before they are sent to the configured error queue, use the following code:
@@ -91,7 +91,22 @@ endpoint.Recoverability.OnFailedMessage(settings =>
     });
 });
 ```
-<sup><a href='/src/Snippets/AutoRateLimitingSnippets.cs#L17-L25' title='Snippet source file'>snippet source</a> | <a href='#snippet-failedmessagecustomization' title='Start of snippet'>anchor</a></sup>
+<sup><a href='/src/Snippets/RecoverabilitySnippets.cs#L18-L26' title='Snippet source file'>snippet source</a> | <a href='#snippet-failedmessagecustomization' title='Start of snippet'>anchor</a></sup>
+<!-- endSnippet -->
+
+To take full control over how the endpoint treats failed message, it's possible to register a [custom recoverability policy](https://docs.particular.net/nservicebus/recoverability/custom-recoverability-policy):
+
+<!-- snippet: CustomRecoverabilityPolicy -->
+<a id='snippet-customrecoverabilitypolicy'></a>
+```cs
+endpoint.Recoverability.UseCustomRecoverabilityPolicy(((config, context) =>
+{
+    // Use the configuration and the context
+    // to decide how to handle the failing message
+    return RecoverabilityAction.ImmediateRetry();
+}));
+```
+<sup><a href='/src/Snippets/RecoverabilitySnippets.cs#L31-L38' title='Snippet source file'>snippet source</a> | <a href='#snippet-customrecoverabilitypolicy' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
 ## Transport
