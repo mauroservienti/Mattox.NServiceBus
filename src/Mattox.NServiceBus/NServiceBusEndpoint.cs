@@ -198,8 +198,10 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             recoverabilityConfiguration.Failed(Recoverability.OnFailedMessageCallback);
         }
 
-        // TODO allow to register with a delegate a custom retry policy 
-        // recoverabilityConfiguration.CustomPolicy()
+        if (Recoverability.CustomRecoverabilityPolicy != null)
+        {
+            recoverabilityConfiguration.CustomPolicy(Recoverability.CustomRecoverabilityPolicy);
+        }
 
         if (recoverabilitySection?.GetSection("AutomaticRateLimiting") is { } automaticRateLimiting)
         {

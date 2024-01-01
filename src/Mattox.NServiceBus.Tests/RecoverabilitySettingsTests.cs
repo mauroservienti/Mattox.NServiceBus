@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using NServiceBus.Configuration.AdvancedExtensibility;
+using NServiceBus.Transport;
 
 namespace Mattox.NServiceBus.Tests;
 
@@ -220,5 +221,19 @@ public class RecoverabilitySettingsTests
         var settings = endpointConfiguration.GetSettings();
         
         Assert.Equal(expected, settings.GetOrDefault<Action<Dictionary<string, string>>>("Recoverability.Failed.FaultHeaderCustomization"));
+    }
+    
+    [Fact]
+    public void Setting_recoverability_policy_changes_the_default_value()
+    {
+        Func<RecoverabilityConfig, ErrorContext, RecoverabilityAction> expected = (config, context) => RecoverabilityAction.MoveToError("q");
+        
+        var endpoint = new LearningEndpoint("my-endpoint");
+        endpoint.Recoverability.UseCustomRecoverabilityPolicy(expected);
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        
+        Assert.Equal(expected, settings.GetOrDefault<Func<RecoverabilityConfig, ErrorContext, RecoverabilityAction>>("Recoverability.CustomPolicy"));
     }
 }

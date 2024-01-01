@@ -1,4 +1,5 @@
 ﻿using Mattox.NServiceBus.Tests;
+using NServiceBus;
 
 namespace Snippets;
 
@@ -22,6 +23,18 @@ public class RecoverabilitySnippets
                 // Customize failed message headers
             });
         });
+        // end-snippet
+    }
+
+    public void CustomPolicy(LearningEndpoint endpoint)
+    {
+        // begin-snippet: CustomRecoverabilityPolicy
+        endpoint.Recoverability.UseCustomRecoverabilityPolicy(((config, context) =>
+        {
+            // Use the configuration and the context
+            // to decide how to handle the failing message
+            return RecoverabilityAction.ImmediateRetry();
+        }));
         // end-snippet
     }
 }
