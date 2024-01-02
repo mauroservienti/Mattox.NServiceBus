@@ -78,7 +78,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         ConfigureInstallers(endpointConfiguration, endpointConfigurationSection);
         ConfigureSerializer();
         ConfigureDiagnostics(endpointConfiguration, endpointConfigurationSection);
-        ConfigureAddressesOverride(endpointConfigurationSection);
+        ConfigureAddressesOverride(endpointConfiguration, endpointConfigurationSection);
         
         // TODO create and configure the persistence
         // TODO Outbox
