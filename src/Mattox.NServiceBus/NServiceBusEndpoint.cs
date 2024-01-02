@@ -109,7 +109,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         var localAddressOverride = endpointConfigurationSection?["LocalAddressOverride"];
         if (!string.IsNullOrWhiteSpace(localAddressOverride))
         {
-            // TODO tests
             // TODO docs
             endpointConfiguration.OverrideLocalAddress(localAddressOverride);
         }
@@ -117,7 +116,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         var publicReturnAddressOverride = endpointConfigurationSection?["PublicReturnAddressOverride"];
         if (!string.IsNullOrWhiteSpace(publicReturnAddressOverride))
         {
-            // TODO tests
             // TODO docs
             endpointConfiguration.OverridePublicReturnAddress(publicReturnAddressOverride);
         }
