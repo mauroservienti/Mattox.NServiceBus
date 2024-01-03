@@ -109,6 +109,13 @@ endpoint.Recoverability.UseCustomRecoverabilityPolicy(((config, context) =>
 <sup><a href='/src/Snippets/RecoverabilitySnippets.cs#L31-L38' title='Snippet source file'>snippet source</a> | <a href='#snippet-customrecoverabilitypolicy' title='Start of snippet'>anchor</a></sup>
 <!-- endSnippet -->
 
+## Addressing
+
+Section full name: `NServiceBus:EndpointConfiguration`
+
+- `LocalAddressOverride` (string) allows defining the address to override the [default one that matches the endpoint name](https://docs.particular.net/nservicebus/endpoints/specify-endpoint-name#input-queue).
+- `PublicReturnAddressOverride` (string) allows overriding the endpoint return/reply address used by other endpoint when replying to messages.
+
 ## Transport
 
 Section full name: `NServiceBus:EndpointConfiguration:Transport`
