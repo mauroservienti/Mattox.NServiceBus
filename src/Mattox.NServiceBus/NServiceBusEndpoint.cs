@@ -78,7 +78,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         ConfigureInstallers(endpointConfiguration, endpointConfigurationSection);
         ConfigureSerializer();
         ConfigureDiagnostics(endpointConfiguration, endpointConfigurationSection);
-        ConfigureAddressesOverride(endpointConfiguration, endpointConfigurationSection);
+        ConfigureAddressingOptions(endpointConfiguration, endpointConfigurationSection);
         
         // TODO create and configure the persistence
         // TODO Outbox
@@ -95,16 +95,10 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO
         // EndpointConfiguration.EnableOpenTelemetry();
 
-        // TODO
-        // EndpointConfiguration.MakeInstanceUniquelyAddressable();
-
-        // TODO
-        // EndpointConfiguration.UniquelyIdentifyRunningInstance();
-
         endpointConfigurationPreview?.Invoke(endpointConfiguration);
     }
 
-    static void ConfigureAddressesOverride(EndpointConfiguration endpointConfiguration, IConfigurationSection? endpointConfigurationSection)
+    static void ConfigureAddressingOptions(EndpointConfiguration endpointConfiguration, IConfigurationSection? endpointConfigurationSection)
     {
         var localAddressOverride = endpointConfigurationSection?["LocalAddressOverride"];
         if (!string.IsNullOrWhiteSpace(localAddressOverride))
@@ -116,6 +110,12 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         if (!string.IsNullOrWhiteSpace(publicReturnAddressOverride))
         {
             endpointConfiguration.OverridePublicReturnAddress(publicReturnAddressOverride);
+        }
+
+        var instanceDiscriminator = endpointConfigurationSection?["EndpointInstanceDiscriminator"];
+        if (!string.IsNullOrWhiteSpace(instanceDiscriminator))
+        {
+            endpointConfiguration.MakeInstanceUniquelyAddressable(instanceDiscriminator);
         }
     }
 
