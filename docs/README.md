@@ -115,6 +115,7 @@ Section full name: `NServiceBus:EndpointConfiguration`
 
 - `LocalAddressOverride` (string) allows defining the address to override the [default one that matches the endpoint name](https://docs.particular.net/nservicebus/endpoints/specify-endpoint-name#input-queue).
 - `PublicReturnAddressOverride` (string) allows overriding the endpoint return/reply address used by other endpoint when replying to messages.
+- `EndpointInstanceDiscriminator` (string) allows making [endpoint instances in scaled out environments uniquely addressable](https://docs.particular.net/nservicebus/messaging/routing#make-instance-uniquely-addressable).
 
 ## Transport
 
