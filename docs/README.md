@@ -130,3 +130,7 @@ NOTE: It's suggested to not discard messages in production.
 ### Transport Transaction
 
 - `TransportTransactionMode` (TransactionScope, SendsAtomicWithReceive, ReceiveOnly, None. The default value depends on the transport of choice) allows defining the [endpoint message processing transaction guarantees](https://docs.particular.net/transports/transactions).
+
+### Concurrency level
+
+- `MessageProcessingConcurrency` (`int`,  defaults to not set) sets the [endpoint concurrency level](https://docs.particular.net/nservicebus/operations/tuning) that determines how many messages the endpoint processes in parallel.
