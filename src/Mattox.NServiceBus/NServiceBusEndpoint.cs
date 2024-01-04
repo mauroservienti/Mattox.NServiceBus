@@ -72,6 +72,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
 
         ConfigureTransport(transportConfigurationSection);
         ConfigurePurgeOnStartup(endpointConfiguration, transportConfigurationSection);
+        ConfigureMessageProcessingConcurrency(endpointConfiguration, transportConfigurationSection);
         ConfigureAuditing(endpointConfiguration, endpointConfigurationSection);
         ConfigureRecoverability();
         ConfigureSendOnly(endpointConfiguration, endpointConfigurationSection);
@@ -96,6 +97,21 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // EndpointConfiguration.EnableOpenTelemetry();
 
         endpointConfigurationPreview?.Invoke(endpointConfiguration);
+    }
+
+    static void ConfigureMessageProcessingConcurrency(EndpointConfiguration endpointConfiguration,
+        IConfigurationSection? transportConfigurationSection)
+    {
+        // TODO docs
+        if (transportConfigurationSection?["MessageProcessingConcurrency"] is { } messageProcessingConcurrencyValue)
+        {
+            if (!int.TryParse(messageProcessingConcurrencyValue, out var messageProcessingConcurrency))
+            {
+                throw new ArgumentException("MessageProcessingConcurrency value cannot be parsed to a valid integer.");
+            }
+            
+            endpointConfiguration.LimitMessageProcessingConcurrencyTo(messageProcessingConcurrency);
+        }
     }
 
     static void ConfigureAddressingOptions(EndpointConfiguration endpointConfiguration, IConfigurationSection? endpointConfigurationSection)

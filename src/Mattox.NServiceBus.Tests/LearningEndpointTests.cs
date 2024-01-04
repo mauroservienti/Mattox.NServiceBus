@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using NServiceBus.Configuration.AdvancedExtensibility;
+using NServiceBus.Transport;
 
 namespace Mattox.NServiceBus.Tests;
 
@@ -352,5 +353,42 @@ public class LearningEndpointTests
         var transportDefinition = endpoint.GetTransportDefinition();
 
         Assert.Equal(expected, transportDefinition.TransportTransactionMode);
+    }
+    
+    [Fact]
+    public void Setting_concurrency_level_to_non_parsable_value_throws()
+    {
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Transport:MessageProcessingConcurrency", "cannot be parsed" }
+            })
+            .Build();
+
+        Assert.Throws<ArgumentException>(() =>
+        {
+            var endpoint = new LearningEndpoint("my-endpoint", config);
+            EndpointConfiguration endpointConfiguration = endpoint;
+        });
+    }
+    
+    [Fact]
+    public void Setting_concurrency_level_sets_the_expected_value()
+    {
+        const int expected = 4;
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>()
+            {
+                { "NServiceBus:EndpointConfiguration:Transport:MessageProcessingConcurrency", expected.ToString() }
+            })
+            .Build();
+
+        var endpoint = new LearningEndpoint("my-endpoint", config);
+        EndpointConfiguration endpointConfiguration = endpoint;
+
+        var settings = endpointConfiguration.GetSettings();
+        var pushRuntimeSettings = settings.GetOrDefault<PushRuntimeSettings>("NServiceBus.Transport.PushRuntimeSettings");
+
+        Assert.Equal(expected, pushRuntimeSettings.MaxConcurrency);
     }
 }
