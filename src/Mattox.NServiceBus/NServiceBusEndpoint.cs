@@ -102,7 +102,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     static void ConfigureMessageProcessingConcurrency(EndpointConfiguration endpointConfiguration,
         IConfigurationSection? transportConfigurationSection)
     {
-        // TODO docs
         if (transportConfigurationSection?["MessageProcessingConcurrency"] is { } messageProcessingConcurrencyValue)
         {
             if (!int.TryParse(messageProcessingConcurrencyValue, out var messageProcessingConcurrency))
