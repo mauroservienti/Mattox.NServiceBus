@@ -84,9 +84,6 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO create and configure the persistence
         // TODO Outbox
 
-        // TODO - default not set 
-        // EndpointConfiguration.LimitMessageProcessingConcurrencyTo();
-
         // TODO License:Text
         // EndpointConfiguration.License();
 
