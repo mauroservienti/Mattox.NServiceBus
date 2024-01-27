@@ -105,7 +105,7 @@ public class LearningEndpointTests
     {
         var handlerInvoked = false;
         var endpoint = new LearningEndpoint("my-endpoint");
-        endpoint.PreviewConfiguration(configuration =>
+        endpoint.PreviewConfiguration((configuration, endpointConfiguration) =>
         {
             handlerInvoked = true;
         });
@@ -119,7 +119,7 @@ public class LearningEndpointTests
     {
         var handlerInvoked = false;
         var endpoint = new LearningEndpoint("my-endpoint");
-        endpoint.PreviewConfiguration(configuration =>
+        endpoint.PreviewConfiguration((configuration, endpointConfiguration) =>
         {
             handlerInvoked = true;
         });
