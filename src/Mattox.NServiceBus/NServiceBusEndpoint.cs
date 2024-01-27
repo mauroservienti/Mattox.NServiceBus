@@ -16,11 +16,11 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     readonly EndpointConfiguration endpointConfiguration;
     readonly IConfigurationSection? endpointConfigurationSection;
     bool _useDefaultSerializer = true;
-    Action<SerializationExtensions<SystemJsonSerializer>>? _serializerCustomization;
+    Action<IConfiguration?,SerializationExtensions<SystemJsonSerializer>>? _serializerCustomization;
     TTransport transport;
-    Action<TTransport>? _transportCustomization;
+    Action<IConfiguration?, TTransport>? _transportCustomization;
     Func<IConfiguration?, TTransport>? _transportFactory;
-    Action<EndpointConfiguration>? endpointConfigurationPreview;
+    Action<IConfiguration?, EndpointConfiguration>? endpointConfigurationPreview;
     public EndpointRecoverability Recoverability { get; } = new();
 
     protected NServiceBusEndpoint(IConfiguration configuration)
@@ -93,7 +93,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         // TODO
         // EndpointConfiguration.EnableOpenTelemetry();
 
-        endpointConfigurationPreview?.Invoke(endpointConfiguration);
+        endpointConfigurationPreview?.Invoke(_configuration, endpointConfiguration);
     }
 
     static void ConfigureMessageProcessingConcurrency(EndpointConfiguration endpointConfiguration,
@@ -139,7 +139,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         }
 
         var serializerConfiguration = endpointConfiguration.UseSerialization<SystemJsonSerializer>();
-        _serializerCustomization?.Invoke(serializerConfiguration);
+        _serializerCustomization?.Invoke(_configuration, serializerConfiguration);
     }
 
     // TODO: All the Configure* are static, should this one too?
@@ -149,7 +149,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
             ? _transportFactory(_configuration)
             : CreateTransport(transportConfigurationSection);
 
-        _transportCustomization?.Invoke(transport);
+        _transportCustomization?.Invoke(_configuration, transport);
         endpointConfiguration.UseTransport(transport);
     }
 
@@ -343,12 +343,12 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
     }
 
     public void CustomizeDefaultSerializer(
-        Action<SerializationExtensions<SystemJsonSerializer>> serializerCustomization)
+        Action<IConfiguration?, SerializationExtensions<SystemJsonSerializer>> serializerCustomization)
     {
         _serializerCustomization = serializerCustomization;
     }
 
-    public void CustomizeTransport(Action<TTransport> transportCustomization)
+    public void CustomizeTransport(Action<IConfiguration?, TTransport> transportCustomization)
     {
         _transportCustomization = transportCustomization;
     }
@@ -358,7 +358,7 @@ public abstract class NServiceBusEndpoint<TTransport> where TTransport : Transpo
         _transportFactory = transportFactory;
     }
 
-    public void PreviewConfiguration(Action<EndpointConfiguration> configuration)
+    public void PreviewConfiguration(Action<IConfiguration?, EndpointConfiguration> configuration)
     {
         endpointConfigurationPreview = configuration;
     }
