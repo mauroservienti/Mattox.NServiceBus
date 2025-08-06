@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: windows-2019
+          - os: windows-latest
             name: Windows
           - os: ubuntu-latest
             name: Linux
@@ -56,7 +56,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Download artifacts
-        uses: actions/download-artifact@v4.3.0
+        uses: actions/download-artifact@v5.0.0
         with:
           name: nuget-packages
           path: nugets/
@@ -64,3 +64,4 @@ jobs:
         run: dotnet nuget push ./nugets/*.nupkg --source https://f.feedz.io/mauroservienti/pre-releases/nuget --api-key ${{ secrets.FEEDZ_API_KEY }}
       - name: Push symbols to Feedz.io
         run: dotnet nuget push ./nugets/*.snupkg --source https://f.feedz.io/mauroservienti/pre-releases/symbols --api-key ${{ secrets.FEEDZ_API_KEY }}
+
